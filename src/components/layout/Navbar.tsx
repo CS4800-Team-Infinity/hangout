@@ -12,13 +12,13 @@ export function Navbar() {
                 </Link>
                 <div className="gap-4 flex items-center">
                     <Link
-                        href="/"
+                        href="/login"
                         className="text-sm text-zinc-400 hover:text-white transition-all duration-200"
                     >
                         login
                     </Link>
                     <Link
-                        href="/"
+                        href="/signup"
                         className="text-sm text-black bg-white border border-none px-4 py-2 rounded-3xl hover:scale-105 transition-all duration-200"
                         style={{ boxShadow: '0 0 16px rgba(226, 205, 205, 0.8)' }}
                     >

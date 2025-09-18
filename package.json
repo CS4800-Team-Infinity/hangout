@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.2",
