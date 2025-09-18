@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IRSVP extends Document {
+export interface RSVP extends Document {
     hangout: mongoose.Types.ObjectId;
     user: mongoose.Types.ObjectId;
     status: 'pending' | 'accepted' | 'declined';
@@ -8,7 +8,7 @@ export interface IRSVP extends Document {
     notes?: string;
 }
 
-const RSVPSchema = new Schema<IRSVP>({
+const RSVPSchema = new Schema<RSVP>({
     hangout: {
         type: Schema.Types.ObjectId,
         ref: 'Hangout',
@@ -33,4 +33,4 @@ const RSVPSchema = new Schema<IRSVP>({
 
 RSVPSchema.index({ hangout: 1, user: 1 }, { unique: true });
 
-export default mongoose.models.RSVP || mongoose.model<IRSVP>('RSVP', RSVPSchema);
+export default mongoose.models.RSVP || mongoose.model<RSVP>('RSVP', RSVPSchema);

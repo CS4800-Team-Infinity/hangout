@@ -6,7 +6,7 @@ export enum UserRole {
     ADMIN = 'admin'
 }
 
-export interface IUser extends Document {
+export interface User extends Document {
     _id: string;
     email?: string;
     username?: string;
@@ -29,7 +29,7 @@ export interface IUser extends Document {
     isActive: boolean;
 }
 
-const UserSchema = new Schema<IUser>({
+const UserSchema = new Schema<User>({
     email: {
         type: String,
         unique: true,
@@ -95,4 +95,4 @@ UserSchema.index({ username: 1 });
 UserSchema.index({ guestId: 1 });
 UserSchema.index({ role: 1, isActive: 1 });
 
-export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export default mongoose.models.User || mongoose.model<User>('User', UserSchema);

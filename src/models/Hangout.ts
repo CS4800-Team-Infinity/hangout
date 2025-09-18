@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { v4 as uuidv4 } from 'uuid';
 
-export interface IHangout extends Document {
+export interface Hangout extends Document {
     _id: string;
     uuid: string;
     title: string;
@@ -21,7 +21,7 @@ export interface IHangout extends Document {
     createdAt: Date;
 }
 
-const HangoutSchema = new Schema<IHangout>({
+const HangoutSchema = new Schema<Hangout>({
     uuid: {
         type: String,
         default: uuidv4,
@@ -83,4 +83,4 @@ HangoutSchema.index({ uuid: 1 });
 HangoutSchema.index({ host: 1 });
 HangoutSchema.index({ status: 1, isPublic: 1 });
 
-export default mongoose.models.Hangout || mongoose.model<IHangout>('Hangout', HangoutSchema);
+export default mongoose.models.Hangout || mongoose.model<Hangout>('Hangout', HangoutSchema);
