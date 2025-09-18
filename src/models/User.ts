@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { hashPassword } from "../lib/auth";
 
 export enum UserRole {
     GUEST = 'guest',
@@ -94,5 +95,25 @@ UserSchema.index({ email: 1 });
 UserSchema.index({ username: 1 });
 UserSchema.index({ guestId: 1 });
 UserSchema.index({ role: 1, isActive: 1 });
+
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) {
+    return next();
+  }
+
+  try {
+    this.password = await hashPassword(this.password);
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
+});
+
+UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+  if (!this.password) return false;
+  
+  const bcrypt = require('bcryptjs');
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 export default mongoose.models.User || mongoose.model<User>('User', UserSchema);
