@@ -15,7 +15,7 @@ export function SignupForm({
             <h1 className="text-xl font-bold">welcome to hangout!</h1>
             <div className="text-center text-sm">
               already have an account?{" "}
-              <a href="/login" className="underline underline-offset-4">
+              <a href="/login" className="underline underline-offset-4 hover:text-zinc-300 transition-all duration-200">
                 log in
               </a>
             </div>
@@ -57,7 +57,7 @@ export function SignupForm({
                 required
               />
             </div>
-            <Button type="submit" className="w-full hover:cursor-pointer">
+            <Button type="submit" className="w-full hover:cursor-pointer" style={{ boxShadow: '0 0 16px rgba(226, 205, 205, 0.8)' }}>
               signup
             </Button>
           </div>
