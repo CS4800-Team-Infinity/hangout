@@ -1,5 +1,3 @@
-import { GalleryVerticalEnd } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,15 +12,10 @@ export function LoginForm({
       <form>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-            </a>
             <h1 className="text-xl font-bold">welcome to hangout!</h1>
             <div className="text-center text-sm">
               don&apos;t have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
+              <a href="/signup" className="underline underline-offset-4">
                 sign up
               </a>
             </div>
@@ -34,6 +27,15 @@ export function LoginForm({
                 id="email"
                 type="email"
                 placeholder="m@example.com"
+                required
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="password">password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="password"
                 required
               />
             </div>
