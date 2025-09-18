@@ -36,6 +36,32 @@ yarn-error.log*
 # vercel
 .vercel
 
+# mongoDB
+/data/
+/dump/
+*.mongodb.js
+*.mongodb.json
+
+# logs
+logs
+*.log
+logs/*
+
+# backend build output
+/dist/
+/build/
+
+# os & editor files
+.vscode/
+.idea/
+Thumbs.db
+ehthumbs.db
+*.swp
+
+# misc editor files
+*.sublime-workspace
+*.sublime-project
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
