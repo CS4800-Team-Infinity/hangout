@@ -62,6 +62,12 @@ const apiCall = async <T>(
     const res = await fetch(url, config);
     const data = await res.json();
 
+    // For auth endpoints, return the response data even if not ok
+    // This allows proper error handling in the auth context
+    if (!res.ok && (endpoint.startsWith('/auth/') || endpoint.startsWith('/admin/'))) {
+      return data;
+    }
+
     if (!res.ok) {
       throw new Error(data.error || `http error! status: ${res.status}`);
     }
