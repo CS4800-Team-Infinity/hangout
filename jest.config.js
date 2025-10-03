@@ -16,6 +16,9 @@ const customJestConfig = {
   },
   testEnvironment: 'jest-environment-jsdom',
   setupFiles: ['<rootDir>/jest.polyfills.js'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(msw|@mswjs/interceptors|until-async)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
