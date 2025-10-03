@@ -110,7 +110,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="min-h-screen text-white pt-20 px-8">
+    <div className="min-h-screen text-black pt-20 px-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold">registered users ({users.length})</h1>
@@ -135,7 +135,7 @@ export default function UsersPage() {
         ) : (
           <div className="grid gap-4">
             {users.map((user) => (
-              <div key={user._id} className="bg-zinc-900 p-6 rounded-lg border border-zinc-800">
+              <div key={user._id} className="bg-white p-6 rounded-lg border border-zinc-300">
                 <div className="flex justify-between items-start">
                   <div className="flex-grow">
                     <h3 className="text-xl font-semibold">{user.name}</h3>
@@ -153,9 +153,9 @@ export default function UsersPage() {
                     </div>
                     
                     {isAdmin && showPasswords && user.passwordHash && (
-                      <div className="mt-3 p-3 bg-zinc-800 rounded border-l-4 border-zinc-500">
-                        <p className="text-zinc-400 text-xs font-semibold mb-1">PASSWORD HASH:</p>
-                        <p className="text-xs text-zinc-300 font-mono break-all">
+                      <div className="mt-3 p-3 bg-zinc-100 rounded border-l-4 border-zinc-500">
+                        <p className="text-zinc-800 text-xs font-semibold mb-1">PASSWORD HASH:</p>
+                        <p className="text-xs text-zinc-600 font-mono break-all">
                           {user.passwordHash}
                         </p>
                       </div>
@@ -190,7 +190,7 @@ export default function UsersPage() {
         
         <button 
           onClick={fetchUsers}
-          className="mt-8 bg-white text-black px-4 py-2 rounded-xl hover:bg-gray-200 transition-colors cursor-pointer"
+          className="my-4 bg-white text-black px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
         >
           refresh
         </button>
