@@ -210,7 +210,7 @@ export function Navbar() {
                                     onClick={handleLogout}
                                     variant="outline"
                                     size="sm"
-                                    className="text-md text-black border border-zinc-300 transition-all  hover:text-white hover:bg-gradient-to-r  hover:from-[#EF5DA8] hover:to-[#5D5FEF]"
+                                    className="text-md text-black border border-zinc-300 transition-all  hover:text-white hover:bg-gradient-to-r  hover:from-[#EF5DA8] hover:to-[#5D5FEF] hover:cursor-pointer"
                                 >
                                     logout
                                 </Button>
