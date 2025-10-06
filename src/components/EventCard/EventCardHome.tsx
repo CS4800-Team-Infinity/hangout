@@ -5,7 +5,7 @@ export default function EventCardHome(props: EventCardProps) {
         <EventCardBase
             {...props}
             variant="home"
-            className="flex-col w-[400px] h-[160px]"
+            className="flex-col w-[400px] min-h-fit"
             actions={true}
         />
     );
