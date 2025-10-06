@@ -133,6 +133,14 @@ export function Navbar() {
                             </span>
                         </Link>
 
+                        {/* About link */}
+                        <Link
+                            href="/about"
+                            className="text-md font-semibold text-black transition-colors hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#5D5FEF] hover:to-[#EF5DA8]"
+                        >
+                            About
+                        </Link>
+
                         {/* DESKTOP search (inline) */}
                         <form onSubmit={handleSearch} className="hidden md:block w-[600px] max-w-xl mx-6">
                             <div className="p-[2px] rounded-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8]">
