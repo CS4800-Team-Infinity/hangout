@@ -9,6 +9,7 @@ import { SignupForm } from '@/components/signup-form';
 import EventCardHome from '@/components/EventCard/EventCardHome';
 import EventCardList from '@/components/EventCard/EventCardList';
 import EventCardMap from '@/components/EventCard/EventCardMap';
+import EventList from '@/components/EventCard/EventList';
 
 export default function ComponentPreview() {
   // Sample event data
@@ -194,6 +195,21 @@ export default function ComponentPreview() {
                   month="MAR"
                   day="12"
                   imageUrl="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=500"
+                />
+              </div>
+            </div>
+
+            {/* EventList - Database Connected */}
+            <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">EventList - Scrollable List (Database Connected)</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                This component fetches hangout data from the MongoDB database via the <code className="bg-gray-100 px-1 rounded">/api/hangouts/list</code> endpoint
+                and displays a scrollable list of events with populated host and attendee information.
+              </p>
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <EventList
+                  status="upcoming"
+                  className="max-h-[600px]"
                 />
               </div>
             </div>

@@ -154,3 +154,55 @@ export const userUtils = {
     }
   },
 };
+
+// Hangout types
+export interface Attendee {
+  id: string;
+  name: string;
+  avatarUrl: string;
+}
+
+export interface HangoutEvent {
+  eventId: string;
+  month: string;
+  day: string;
+  title: string;
+  location: string;
+  datetime: string;
+  host: string;
+  status: 'Joined' | 'Saved' | 'Just Viewed';
+  price: string;
+  imageUrl: string;
+  attendees: Attendee[];
+  registrationUrl?: string;
+}
+
+export interface HangoutsListResponse {
+  success: boolean;
+  events: HangoutEvent[];
+  error?: string;
+}
+
+export const hangoutsAPI = {
+  getList: async (params?: {
+    status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled' | 'all';
+    isPublic?: boolean;
+  }): Promise<HangoutsListResponse> => {
+    const queryParams = new URLSearchParams();
+
+    if (params?.status) {
+      queryParams.append('status', params.status);
+    }
+
+    if (params?.isPublic !== undefined) {
+      queryParams.append('isPublic', params.isPublic.toString());
+    }
+
+    const query = queryParams.toString();
+    const endpoint = `/hangouts/list${query ? `?${query}` : ''}`;
+
+    return apiCall<HangoutsListResponse>(endpoint, {
+      method: 'GET',
+    });
+  },
+};

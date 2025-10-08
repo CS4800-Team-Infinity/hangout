@@ -15,6 +15,7 @@ export interface Hangout extends Document {
             lng: number;
         };
     };
+    imageUrl?: string;
     maxParticipants?: number;
     status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
     isPublic: boolean;
@@ -63,6 +64,9 @@ const HangoutSchema = new Schema<Hangout>({
             lat: Number,
             lng: Number
         }
+    },
+    imageUrl: {
+        type: String
     },
     maxParticipants: {
         type: Number,

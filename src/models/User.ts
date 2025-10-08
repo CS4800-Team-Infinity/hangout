@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { hashPassword } from "../lib/auth";
+import bcrypt from 'bcryptjs';
 
 export enum UserRole {
     GUEST = 'guest',
@@ -111,8 +112,7 @@ UserSchema.pre('save', async function (next) {
 
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   if (!this.password) return false;
-  
-  const bcrypt = require('bcryptjs');
+
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
