@@ -39,7 +39,6 @@ const apiCall = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   const url = `${API_BASE_URL}/api${endpoint}`;
-  
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };

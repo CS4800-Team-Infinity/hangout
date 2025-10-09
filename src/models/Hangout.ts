@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { v4 as uuidv4 } from 'uuid';
+import User from "./User";
 
 export interface Hangout extends Document {
     _id: string;

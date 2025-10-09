@@ -1,8 +1,45 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import connect from '@/lib/connect';
-import Hangout from '@/models/Hangout';
-import RSVP from '@/models/RSVP';
-import User from '@/models/User';
+import { NextApiRequest, NextApiResponse } from "next";
+import connect from "@/lib/connect";
+import mongoose from "mongoose";
+import "@/models/User";
+import "@/models/RSVP";
+import "@/models/Hangout";
+import Hangout from "@/models/Hangout";
+import RSVP from "@/models/RSVP";
+
+
+
+
+// Typed lean interfaces
+interface LeanUser {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  profilePicture?: string;
+}
+
+interface LeanHangout {
+  _id: mongoose.Types.ObjectId;
+  uuid: string;
+  title: string;
+  description: string;
+  date: Date;
+  host: LeanUser;
+  location: {
+    address: string;
+    coordinates?: { lat: number; lng: number };
+  };
+  imageUrl?: string;
+  status: "upcoming" | "ongoing" | "completed" | "cancelled";
+  isPublic: boolean;
+}
+
+interface LeanRSVP {
+  _id: mongoose.Types.ObjectId;
+  user: LeanUser;
+  hangout: mongoose.Types.ObjectId;
+  status: "accepted" | "pending" | "declined";
+}
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -15,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { status = 'upcoming', isPublic } = req.query;
 
     // Build query
-    const query: any = {};
+    const query: Record<string, any> = {};
 
     if (status && status !== 'all') {
       query.status = status;
@@ -29,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const hangouts = await Hangout.find(query)
       .populate('host', 'name profilePicture')
       .sort({ date: 1 })
-      .lean();
+      .lean<LeanHangout[]>();
 
     // Get RSVPs for all hangouts
     const hangoutIds = hangouts.map(h => h._id);
@@ -38,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status: 'accepted'
     })
       .populate('user', 'name profilePicture')
-      .lean();
+      .lean<LeanRSVP[]>();
 
     // Map hangouts to event card format
     const events = hangouts.map(hangout => {

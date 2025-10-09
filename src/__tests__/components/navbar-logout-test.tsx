@@ -4,7 +4,14 @@ import { Navbar } from "@/components/layout/Navbar"
 
 const mockLogout = jest.fn()
 
-const mockUseAuth = {
+const mockUseAuth: {
+  login: jest.Mock,
+  isLoading: boolean,
+  user: { name: string; email: string } | null,
+  isAuthenticated: boolean,
+  register: jest.Mock,
+  logout: jest.Mock
+} = {
   login: jest.fn(),
   isLoading: false,
   user: { name: 'Test User', email: 'test@example.com' },
