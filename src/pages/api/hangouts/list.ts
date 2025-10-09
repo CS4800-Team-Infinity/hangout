@@ -8,8 +8,6 @@ import Hangout from "@/models/Hangout";
 import RSVP from "@/models/RSVP";
 
 
-
-
 // Typed lean interfaces
 interface LeanUser {
   _id: mongoose.Types.ObjectId;

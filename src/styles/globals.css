@@ -123,3 +123,57 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .link-gradient {
+    @apply transition duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#5D5FEF] hover:to-[#EF5DA8];
+  }
+}
+
+@layer components {
+  /* Base box for any icon */
+  .icon-mask {
+    @apply inline-block h-5 w-5 transition-transform duration-300;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: 100% 100%;
+  }
+
+  /* Per-icon masks */
+  .icon-facebook {
+    mask-image: url('/icons/facebook.svg');
+    -webkit-mask-image: url('/icons/facebook.svg');
+  }
+  .icon-instagram {
+    mask-image: url('/icons/instagram.svg');
+    -webkit-mask-image: url('/icons/instagram.svg');
+  }
+  .icon-tiktok {
+    mask-image: url('/icons/tiktok.svg');
+    -webkit-mask-image: url('/icons/tiktok.svg');
+  }
+}
+
+/* Start Google Translate custom styles */
+.goog-te-gadget {
+  border: none !important;
+  background: transparent !important;
+  color: #d1d5dc !important;
+}
+
+.goog-te-gadget span {
+  display: none !important;
+}
+
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+body { top: 0 !important; }
+
+/* End Google Translate custom styles */
