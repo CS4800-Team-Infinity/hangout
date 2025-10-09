@@ -175,6 +175,10 @@ export interface HangoutEvent {
   imageUrl: string;
   attendees: Attendee[];
   registrationUrl?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 export interface HangoutsListResponse {

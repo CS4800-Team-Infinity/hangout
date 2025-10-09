@@ -10,6 +10,7 @@ import EventCardHome from '@/components/EventCard/EventCardHome';
 import EventCardList from '@/components/EventCard/EventCardList';
 import EventCardMap from '@/components/EventCard/EventCardMap';
 import EventList from '@/components/EventCard/EventList';
+import MapView from '@/components/Map/MapView';
 
 export default function ComponentPreview() {
   // Sample event data
@@ -211,6 +212,23 @@ export default function ComponentPreview() {
                   status="upcoming"
                   className="max-h-[600px]"
                 />
+              </div>
+            </div>
+          </section>
+
+          {/* Map View Section */}
+          <section className="mb-16">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Interactive Map</h2>
+
+            {/* MapView - Interactive Google Maps */}
+            <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">MapView - Interactive Google Maps (Database Connected)</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                This component displays an interactive Google Map with event markers. Users can pan, zoom, and click markers to view event details.
+                Events are fetched from the MongoDB database with coordinates and displayed as custom markers on the map.
+              </p>
+              <div className="border rounded-lg overflow-hidden">
+                <MapView className="w-full h-[600px]" />
               </div>
             </div>
           </section>

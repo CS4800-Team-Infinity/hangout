@@ -75,7 +75,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         price: 'Free',
         imageUrl: (hangout as any).imageUrl || `https://source.unsplash.com/800x600/?event,${encodeURIComponent(hangout.title)}`,
         attendees,
-        registrationUrl: `/events/${hangout.uuid}`
+        registrationUrl: `/events/${hangout.uuid}`,
+        coordinates: hangout.location.coordinates
       };
     });
 
