@@ -26,7 +26,7 @@ export default function ExploreCategories() {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-6 sm:px-12 py-10 text-white">
+    <section className="max-w-7xl mx-auto text-white">
       <h2 className="text-2xl font-semibold mb-6 text-black">
         Explore top categories
       </h2>

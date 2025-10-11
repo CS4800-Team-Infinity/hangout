@@ -73,10 +73,10 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 mt-14">
+    <div className="min-h-screen text-gray-900 mt-14 space-y-6">
       {/* ===== Hero Section ===== */}
-      <section className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10 px-6 py-4">
-        <div className="md:w-[80%] w-full h-[400px] px-6">
+      <section className="max-w-7xl mx-auto px-6 md:px-12 py-12 flex flex-col md:flex-row items-center justify-between gap-10">
+        <div className="md:w-[80%] w-full h-[400px] rounded-2xl overflow-hidden shadow-lg">
           <MapView />
         </div>
         <div className="md:w-1/2 w-full text-center md:text-left space-y-6 px-6">
@@ -91,29 +91,19 @@ export default function HomePage() {
       </section>
 
       {/* ===== Events Section ===== */}
-      <section className="max-w-7xl mx-auto px-6 py-10">
+      <section className="max-w-7xl mx-auto px-6 md:px-12 py-12">
         <NearbyEventsSection />
       </section>
 
       {/* ===== Join Hangout Banner ===== */}
-      <section className="flex justify-center w-full px-4 sm:px-8 md:px-12 py-10">
+      <section className="max-w-7xl mx-auto px-6 md:px-12 py-12 flex justify-center">
         <div
-          className="
-      relative 
-      w-[85%] sm:w-[92%] md:w-[100%] 
-      max-w-5xl 
-      rounded-2xl overflow-hidden shadow-lg 
-      flex flex-col items-center justify-center text-center text-white 
-      p-5 sm:p-8 
-      h-[240px] sm:h-[320px] md:h-[380px] 
-      bg-cover bg-center
-    "
+          className="relative w-full rounded-2xl overflow-hidden shadow-lg flex flex-col items-center justify-center text-center text-white sm:p-8 h-[240px] sm:h-[320px] md:h-[380px] bg-cover bg-center"
           style={{
             backgroundImage: "url('/hangoutletter.png')",
           }}
         >
           <div className="absolute inset-0 bg-black/10"></div>
-
           <div className="relative z-10 flex flex-col items-center justify-center space-y-4">
             <h3 className="text-3xl sm:text-4xl font-bold drop-shadow-md">
               Join Hangout
@@ -133,12 +123,12 @@ export default function HomePage() {
       </section>
 
       {/* ===== Explore Categories ===== */}
-      <section className="max-w-7xl mx-auto px-0 py-4 text-white">
+      <section className="max-w-7xl mx-auto px-6 md:px-12 py-12 text-white">
         <ExploreCategories />
       </section>
 
       {/* ===== Popular Cities ===== */}
-      <section className="max-w-7xl mx-auto px-6 py-10">
+      <section className="max-w-7xl mx-auto px-6 md:px-12 py-12 mb-20">
         <PopularCities />
       </section>
     </div>
