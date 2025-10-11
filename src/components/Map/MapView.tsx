@@ -7,7 +7,6 @@ import {
 } from "@vis.gl/react-google-maps";
 import { hangoutsAPI, HangoutEvent } from "@/lib/api";
 import EventMarker from "./EventMarker";
-import SearchBox from "./SearchBox";
 import EventCardMap from "../EventCard/EventCardMap";
 import UserLocationMarker from "./UserLocationMarker";
 

@@ -67,8 +67,11 @@ export default function NearbyEventsSection() {
     <section className="max-w-7xl mx-auto ">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Events near {city}</h2>
-        <Link href="/events" className="text-[#EF5DA8] hover:underline">
-          See all
+        <Link
+          href="/events"
+          className="text-[#EF5DA8] hover:text-[#5D5FEF] font-bold text-lg"
+        >
+          See all...
         </Link>
       </div>
 

@@ -4,6 +4,10 @@ import connect from "@/lib/connect";
 import Hangout from "@/models/Hangout";
 import RSVP from "@/models/RSVP";
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -15,7 +19,14 @@ export default async function handler(
   try {
     await connect();
 
-    const { lat, lng, status = "upcoming", isPublic } = req.query;
+    const {
+      lat,
+      lng,
+      status = "upcoming",
+      isPublic,
+      city,
+      category,
+    } = req.query;
 
     // Safely parse floats only if values exist
     const userLat = lat ? parseFloat(lat as string) : NaN;
@@ -31,6 +42,13 @@ export default async function handler(
       baseFilter.isPublic = isPublic === "true";
     }
 
+    // City & category filters
+    if (city)
+      baseFilter["location.address"] = {
+        $regex: new RegExp(escapeRegex(city as string), "i"),
+      };
+    if (category) baseFilter.category = category;
+
     // Only run geo query if lat/lng are valid numbers
     if (!isNaN(userLat) && !isNaN(userLng)) {
       try {
@@ -45,7 +63,7 @@ export default async function handler(
         })
           .populate("host", "name profilePicture")
           .sort({ date: 1 })
-          .limit(50)
+          .limit(0) // no limit for now
           .lean();
 
         console.log("✅ Found", hangouts.length, "events near user");
@@ -75,7 +93,7 @@ export default async function handler(
         })
           .populate("host", "name profilePicture")
           .sort({ date: 1 })
-          .limit(20)
+          .limit(0) // no limit for now
           .lean();
 
         console.log(`🧭 Fallback: Found ${hangouts.length} Pomona events`);
