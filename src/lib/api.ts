@@ -32,7 +32,7 @@ export interface AuthResponse {
 
 const API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://your-app-domain.com"
+    ? "https://gethangout.app/"
     : "http://localhost:3000";
 
 const apiCall = async <T>(
