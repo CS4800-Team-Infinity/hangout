@@ -30,9 +30,10 @@ export interface AuthResponse {
   error?: string;
 }
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-app-domain.com' 
-  : 'http://localhost:3000';
+const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://your-app-domain.com"
+    : "http://localhost:3000";
 
 const apiCall = async <T>(
   endpoint: string,
@@ -40,13 +41,14 @@ const apiCall = async <T>(
 ): Promise<T> => {
   const url = `${API_BASE_URL}/api${endpoint}`;
   const defaultHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
   // add auth header if token exists
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
   if (token) {
-    defaultHeaders['Authorization'] = `Bearer ${token}`;
+    defaultHeaders["Authorization"] = `Bearer ${token}`;
   }
 
   const config: RequestInit = {
@@ -63,7 +65,10 @@ const apiCall = async <T>(
 
     // For auth endpoints, return the response data even if not ok
     // This allows proper error handling in the auth context
-    if (!res.ok && (endpoint.startsWith('/auth/') || endpoint.startsWith('/admin/'))) {
+    if (
+      !res.ok &&
+      (endpoint.startsWith("/auth/") || endpoint.startsWith("/admin/"))
+    ) {
       return data;
     }
 
@@ -73,57 +78,57 @@ const apiCall = async <T>(
 
     return data;
   } catch (error) {
-    console.error('api call failed:', error);
+    console.error("api call failed:", error);
     throw error;
   }
 };
 
 export const authAPI = {
   register: async (userData: RegisterRequest): Promise<AuthResponse> => {
-    return apiCall<AuthResponse>('/auth/register', {
-      method: 'POST',
+    return apiCall<AuthResponse>("/auth/register", {
+      method: "POST",
       body: JSON.stringify(userData),
     });
   },
 
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-    return apiCall<AuthResponse>('/auth/login', {
-      method: 'POST',
+    return apiCall<AuthResponse>("/auth/login", {
+      method: "POST",
       body: JSON.stringify(credentials),
     });
   },
 
   getMe: async (): Promise<AuthResponse> => {
-    return apiCall<AuthResponse>('/auth/me', {
-      method: 'GET',
+    return apiCall<AuthResponse>("/auth/me", {
+      method: "GET",
     });
   },
 
   logout: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
   },
 };
 
 export const tokenUtils = {
   saveToken: (token: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', token);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", token);
     }
   },
 
   getToken: (): string | null => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('token');
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("token");
     }
     return null;
   },
 
   removeToken: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
     }
   },
 
@@ -134,22 +139,22 @@ export const tokenUtils = {
 
 export const userUtils = {
   saveUser: (user: User) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user', JSON.stringify(user));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("user", JSON.stringify(user));
     }
   },
 
   getUser: (): User | null => {
-    if (typeof window !== 'undefined') {
-      const userData = localStorage.getItem('user');
+    if (typeof window !== "undefined") {
+      const userData = localStorage.getItem("user");
       return userData ? JSON.parse(userData) : null;
     }
     return null;
   },
 
   removeUser: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('user');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("user");
     }
   },
 };
@@ -161,23 +166,39 @@ export interface Attendee {
   avatarUrl: string;
 }
 
+export type GeoJSONLocation = {
+  type: "Point";
+  coordinates: [number, number];
+  address?: string;
+};
+
 export interface HangoutEvent {
-  eventId: string;
-  month: string;
-  day: string;
+  _id?: string;
+  uuid?: string;
   title: string;
-  location: string;
-  datetime: string;
-  host: string;
-  status: 'Joined' | 'Saved' | 'Just Viewed';
-  price: string;
-  imageUrl: string;
-  attendees: Attendee[];
+  description?: string;
+  host: string | { name?: string; email?: string };
+  date?: string | Date;
+  datetime?: string;
+  location: string | GeoJSONLocation;
+  status?:
+    | "upcoming"
+    | "ongoing"
+    | "completed"
+    | "cancelled"
+    | "Joined"
+    | "Saved"
+    | "Just Viewed";
+  price?: string;
+  imageUrl?: string;
+  attendees?: Attendee[];
   registrationUrl?: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
+  coordinates?: { lat: number; lng: number };
+  month?: string;
+  day?: string;
+  isPublic?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface HangoutsListResponse {
@@ -188,24 +209,32 @@ export interface HangoutsListResponse {
 
 export const hangoutsAPI = {
   getList: async (params?: {
-    status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled' | 'all';
+    status?: "upcoming" | "ongoing" | "completed" | "cancelled" | "all";
     isPublic?: boolean;
+    lat?: number;
+    lng?: number;
   }): Promise<HangoutsListResponse> => {
     const queryParams = new URLSearchParams();
 
     if (params?.status) {
-      queryParams.append('status', params.status);
+      queryParams.append("status", params.status);
     }
 
     if (params?.isPublic !== undefined) {
-      queryParams.append('isPublic', params.isPublic.toString());
+      queryParams.append("isPublic", params.isPublic.toString());
+    }
+
+    // Include lat/lng only if provided
+    if (params?.lat && params?.lng) {
+      queryParams.append("lat", params.lat.toString());
+      queryParams.append("lng", params.lng.toString());
     }
 
     const query = queryParams.toString();
-    const endpoint = `/hangouts/list${query ? `?${query}` : ''}`;
+    const endpoint = `/hangouts/list${query ? `?${query}` : ""}`;
 
     return apiCall<HangoutsListResponse>(endpoint, {
-      method: 'GET',
+      method: "GET",
     });
   },
 };

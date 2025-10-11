@@ -177,3 +177,91 @@ body {
 body { top: 0 !important; }
 
 /* End Google Translate custom styles */
+
+/* Event Map custom styles */
+@keyframes slowPing {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  75%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-slowPing {
+  animation: slowPing 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Remove pointer tails (triangle below InfoWindow) safely */
+.gm-style-iw-t::after,
+.gm-style-iw-t::before,
+.gm-style-iw-tc::after,
+.gm-style-iw-tc::before,
+.gm-style-iw-tc > div {
+  visibility: hidden !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Remove outer balloon background */
+.gm-style-iw,
+.gm-style-iw-tc {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: visible !important;
+}
+
+/* Clean up content container */
+.gm-style-iw-c {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Prevent inner div from cutting content */
+.gm-style-iw-d {
+  overflow: visible !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+  height: auto !important;
+}
+
+/* Hide scrollbar */
+.gm-style-iw-d::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Allow wrapper to fit the card height */
+.gm-style-iw-tc {
+  overflow: visible !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Optional: smooth fade-in animation for InfoWindow */
+.gm-style-iw-c {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* End Event Map custom styles */
+

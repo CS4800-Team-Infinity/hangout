@@ -1,37 +1,45 @@
-import { Navbar } from '@/components/layout/Navbar';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { LoginForm } from '@/components/login-form';
-import { SignupForm } from '@/components/signup-form';
-import EventCardHome from '@/components/EventCard/EventCardHome';
-import EventCardList from '@/components/EventCard/EventCardList';
-import EventCardMap from '@/components/EventCard/EventCardMap';
-import EventList from '@/components/EventCard/EventList';
-import MapView from '@/components/Map/MapView';
+import { Navbar } from "@/components/layout/Navbar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { LoginForm } from "@/components/login-form";
+import { SignupForm } from "@/components/signup-form";
+import EventCardHome from "@/components/EventCard/EventCardHome";
+import EventCardList from "@/components/EventCard/EventCardList";
+import EventCardMap from "@/components/EventCard/EventCardMap";
+import EventList from "@/components/EventCard/EventList";
+import MapView from "@/components/Map/MapView";
 
 export default function ComponentPreview() {
   // Sample event data
   const sampleAttendees = [
-    { id: '1', name: 'Alice', avatarUrl: 'https://i.pravatar.cc/150?img=1' },
-    { id: '2', name: 'Bob', avatarUrl: 'https://i.pravatar.cc/150?img=2' },
-    { id: '3', name: 'Charlie', avatarUrl: 'https://i.pravatar.cc/150?img=3' },
-    { id: '4', name: 'Diana', avatarUrl: 'https://i.pravatar.cc/150?img=4' },
+    { id: "1", name: "Alice", avatarUrl: "https://i.pravatar.cc/150?img=1" },
+    { id: "2", name: "Bob", avatarUrl: "https://i.pravatar.cc/150?img=2" },
+    { id: "3", name: "Charlie", avatarUrl: "https://i.pravatar.cc/150?img=3" },
+    { id: "4", name: "Diana", avatarUrl: "https://i.pravatar.cc/150?img=4" },
   ];
 
   const sampleEvent = {
-    month: 'DEC',
-    day: '15',
-    title: 'React Meetup - Building Modern UIs',
-    location: 'San Luis Obispo, CA',
-    datetime: 'Fri, Dec 15 · 6:00 PM PST',
-    host: 'Tech Community SLO',
-    price: 'Free',
-    imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500',
+    month: "DEC",
+    day: "15",
+    title: "React Meetup - Building Modern UIs",
+    location: "San Luis Obispo, CA",
+    datetime: "Fri, Dec 15 · 6:00 PM PST",
+    host: "Tech Community SLO",
+    price: "Free",
+    imageUrl:
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500",
     attendees: sampleAttendees,
-    eventId: 'sample-123',
+    eventId: "sample-123",
   };
 
   return (
@@ -49,11 +57,15 @@ export default function ComponentPreview() {
 
           {/* UI Components Section */}
           <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">UI Components</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              UI Components
+            </h2>
 
             {/* Buttons */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">Buttons</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                Buttons
+              </h3>
               <div className="flex flex-wrap gap-4">
                 <Button variant="default">Default Button</Button>
                 <Button variant="destructive">Destructive</Button>
@@ -69,15 +81,21 @@ export default function ComponentPreview() {
 
             {/* Cards */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">Cards</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                Cards
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader>
                     <CardTitle>Card Title</CardTitle>
-                    <CardDescription>Card description goes here</CardDescription>
+                    <CardDescription>
+                      Card description goes here
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600">This is the card content area.</p>
+                    <p className="text-sm text-gray-600">
+                      This is the card content area.
+                    </p>
                   </CardContent>
                   <CardFooter>
                     <Button size="sm">Action</Button>
@@ -90,7 +108,9 @@ export default function ComponentPreview() {
                     <CardDescription>With different content</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600">Cards can contain any content you need.</p>
+                    <p className="text-sm text-gray-600">
+                      Cards can contain any content you need.
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -98,7 +118,9 @@ export default function ComponentPreview() {
 
             {/* Form Inputs */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">Form Inputs</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                Form Inputs
+              </h3>
               <div className="space-y-4 max-w-md">
                 <div>
                   <Label htmlFor="demo-input">Input Label</Label>
@@ -106,11 +128,19 @@ export default function ComponentPreview() {
                 </div>
                 <div>
                   <Label htmlFor="demo-email">Email Input</Label>
-                  <Input id="demo-email" type="email" placeholder="email@example.com" />
+                  <Input
+                    id="demo-email"
+                    type="email"
+                    placeholder="email@example.com"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="demo-password">Password Input</Label>
-                  <Input id="demo-password" type="password" placeholder="••••••••" />
+                  <Input
+                    id="demo-password"
+                    type="password"
+                    placeholder="••••••••"
+                  />
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox id="demo-checkbox" />
@@ -122,17 +152,18 @@ export default function ComponentPreview() {
 
           {/* Event Cards Section */}
           <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Event Cards</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              Event Cards
+            </h2>
 
             {/* EventCardHome */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">EventCardHome - Different States</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                EventCardHome - Different States
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="flex justify-center">
-                  <EventCardHome
-                    {...sampleEvent}
-                    status="Just Viewed"
-                  />
+                  <EventCardHome {...sampleEvent} status="Just Viewed" />
                 </div>
                 <div className="flex justify-center">
                   <EventCardHome
@@ -155,12 +186,11 @@ export default function ComponentPreview() {
 
             {/* EventCardList */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">EventCardList - Different States</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                EventCardList - Different States
+              </h3>
               <div className="space-y-4 flex flex-col items-center">
-                <EventCardList
-                  {...sampleEvent}
-                  status="Just Viewed"
-                />
+                <EventCardList {...sampleEvent} status="Just Viewed" />
                 <EventCardList
                   {...sampleEvent}
                   status="Saved"
@@ -183,12 +213,11 @@ export default function ComponentPreview() {
 
             {/* EventCardMap */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">EventCardMap - With Gradient Border</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                EventCardMap - With Gradient Border
+              </h3>
               <div className="space-y-4 flex flex-col items-center">
-                <EventCardMap
-                  {...sampleEvent}
-                  status="Just Viewed"
-                />
+                <EventCardMap {...sampleEvent} status="Just Viewed" />
                 <EventCardMap
                   {...sampleEvent}
                   status="Saved"
@@ -202,51 +231,67 @@ export default function ComponentPreview() {
 
             {/* EventList - Database Connected */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">EventList - Scrollable List (Database Connected)</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                EventList - Scrollable List (Database Connected)
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
-                This component fetches hangout data from the MongoDB database via the <code className="bg-gray-100 px-1 rounded">/api/hangouts/list</code> endpoint
-                and displays a scrollable list of events with populated host and attendee information.
+                This component fetches hangout data from the MongoDB database
+                via the{" "}
+                <code className="bg-gray-100 px-1 rounded">
+                  /api/hangouts/list
+                </code>{" "}
+                endpoint and displays a scrollable list of events with populated
+                host and attendee information.
               </p>
               <div className="border rounded-lg p-4 bg-gray-50">
-                <EventList
-                  status="upcoming"
-                  className="max-h-[600px]"
-                />
+                <EventList status="upcoming" className="max-h-[600px]" />
               </div>
             </div>
           </section>
 
           {/* Map View Section */}
           <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Interactive Map</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              Interactive Map
+            </h2>
 
             {/* MapView - Interactive Google Maps */}
             <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700">MapView - Interactive Google Maps (Database Connected)</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                MapView - Interactive Google Maps (Database Connected)
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
-                This component displays an interactive Google Map with event markers. Users can pan, zoom, and click markers to view event details.
-                Events are fetched from the MongoDB database with coordinates and displayed as custom markers on the map.
+                This component displays an interactive Google Map with event
+                markers. Users can pan, zoom, and click markers to view event
+                details. Events are fetched from the MongoDB database with
+                coordinates and displayed as custom markers on the map.
               </p>
-              <div className="border rounded-lg overflow-hidden">
-                <MapView className="w-full h-[600px]" />
+              <div className=" w-full h-[600px]">
+                <MapView />
               </div>
             </div>
           </section>
 
           {/* Form Components Section */}
           <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Form Components</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
+              Form Components
+            </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Login Form */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold mb-4 text-gray-700">Login Form</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                  Login Form
+                </h3>
                 <LoginForm />
               </div>
 
               {/* Signup Form */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold mb-4 text-gray-700">Signup Form</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-700">
+                  Signup Form
+                </h3>
                 <SignupForm />
               </div>
             </div>
@@ -254,8 +299,16 @@ export default function ComponentPreview() {
 
           {/* Info Footer */}
           <div className="text-center text-sm text-gray-500 mt-12">
-            <p>This preview page shows all components with various states and props.</p>
-            <p className="mt-2">Run <code className="bg-gray-200 px-2 py-1 rounded">npm run dev</code> and visit <code className="bg-gray-200 px-2 py-1 rounded">/preview</code></p>
+            <p>
+              This preview page shows all components with various states and
+              props.
+            </p>
+            <p className="mt-2">
+              Run{" "}
+              <code className="bg-gray-200 px-2 py-1 rounded">npm run dev</code>{" "}
+              and visit{" "}
+              <code className="bg-gray-200 px-2 py-1 rounded">/preview</code>
+            </p>
           </div>
         </div>
       </div>

@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import "@/models/User";
+import "@/models/Hangout";
+import "@/models/RSVP";
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -16,7 +19,7 @@ if (!cached) {
 }
 
 async function connect() {
-    if (cached.conn) {
+  if (cached.conn) {
     return cached.conn;
   }
 

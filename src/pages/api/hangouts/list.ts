@@ -1,130 +1,142 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { HydratedDocument } from "mongoose";
 import connect from "@/lib/connect";
-import mongoose from "mongoose";
-import "@/models/User";
-import "@/models/RSVP";
-import "@/models/Hangout";
 import Hangout from "@/models/Hangout";
 import RSVP from "@/models/RSVP";
 
-
-// Typed lean interfaces
-interface LeanUser {
-  _id: mongoose.Types.ObjectId;
-  name: string;
-  profilePicture?: string;
-}
-
-interface LeanHangout {
-  _id: mongoose.Types.ObjectId;
-  uuid: string;
-  title: string;
-  description: string;
-  date: Date;
-  host: LeanUser;
-  location: {
-    address: string;
-    coordinates?: { lat: number; lng: number };
-  };
-  imageUrl?: string;
-  status: "upcoming" | "ongoing" | "completed" | "cancelled";
-  isPublic: boolean;
-}
-
-interface LeanRSVP {
-  _id: mongoose.Types.ObjectId;
-  user: LeanUser;
-  hangout: mongoose.Types.ObjectId;
-  status: "accepted" | "pending" | "declined";
-}
-
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     await connect();
 
-    const { status = 'upcoming', isPublic } = req.query;
+    const { lat, lng, status = "upcoming", isPublic } = req.query;
 
-    // Build query
-    const query: Record<string, any> = {};
+    // Safely parse floats only if values exist
+    const userLat = lat ? parseFloat(lat as string) : NaN;
+    const userLng = lng ? parseFloat(lng as string) : NaN;
 
-    if (status && status !== 'all') {
-      query.status = status;
-    }
+    console.log("📍 Searching near:", userLat, userLng);
+    console.log("Type check:", typeof userLat, typeof userLng);
 
+    let hangouts: HydratedDocument<any>[] = [];
+
+    const baseFilter: any = { status };
     if (isPublic !== undefined) {
-      query.isPublic = isPublic === 'true';
+      baseFilter.isPublic = isPublic === "true";
     }
 
-    // Fetch hangouts with populated host
-    const hangouts = await Hangout.find(query)
-      .populate('host', 'name profilePicture')
-      .sort({ date: 1 })
-      .lean<LeanHangout[]>();
+    // Only run geo query if lat/lng are valid numbers
+    if (!isNaN(userLat) && !isNaN(userLng)) {
+      try {
+        hangouts = await Hangout.find({
+          ...baseFilter,
+          location: {
+            $nearSphere: {
+              $geometry: { type: "Point", coordinates: [userLng, userLat] },
+              $maxDistance: 100000, // 100 km
+            },
+          },
+        })
+          .populate("host", "name profilePicture")
+          .sort({ date: 1 })
+          .limit(50)
+          .lean();
 
-    // Get RSVPs for all hangouts
-    const hangoutIds = hangouts.map(h => h._id);
+        console.log("✅ Found", hangouts.length, "events near user");
+        console.log(
+          "Fetched coordinates:",
+          hangouts.map((h) => h.location.coordinates)
+        );
+      } catch (err: any) {
+        console.warn("⚠️ Geo query failed:", err.message);
+      }
+    } else {
+      console.warn("⚠️ Invalid or missing lat/lng, skipping geo query");
+    }
+
+    // Fallback if nothing found or invalid coords
+    if (!hangouts || hangouts.length === 0) {
+      const pomonaCoords = [-117.7513, 34.0553];
+      try {
+        hangouts = await Hangout.find({
+          ...baseFilter,
+          location: {
+            $nearSphere: {
+              $geometry: { type: "Point", coordinates: pomonaCoords },
+              $maxDistance: 1000000,
+            },
+          },
+        })
+          .populate("host", "name profilePicture")
+          .sort({ date: 1 })
+          .limit(20)
+          .lean();
+
+        console.log(`🧭 Fallback: Found ${hangouts.length} Pomona events`);
+      } catch (err: any) {
+        console.warn("⚠️ Geo query for Pomona fallback failed:", err.message);
+      }
+    }
+
+    console.log(
+      "Fetched coordinates:",
+      hangouts.map((h) => h.location.coordinates)
+    );
+
+    const hangoutIds = hangouts.map((h) => h._id);
     const rsvps = await RSVP.find({
       hangout: { $in: hangoutIds },
-      status: 'accepted'
+      status: "accepted",
     })
-      .populate('user', 'name profilePicture')
-      .lean<LeanRSVP[]>();
+      .populate("user", "name profilePicture")
+      .lean();
 
-    // Map hangouts to event card format
-    const events = hangouts.map(hangout => {
-      const hangoutRSVPs = rsvps.filter(
-        rsvp => rsvp.hangout.toString() === hangout._id.toString()
-      );
-
-      const attendees = hangoutRSVPs.map(rsvp => ({
-        id: (rsvp.user as any)._id.toString(),
-        name: (rsvp.user as any).name,
-        avatarUrl: (rsvp.user as any).profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent((rsvp.user as any).name)}&background=random`
-      }));
-
-      const date = new Date(hangout.date);
-      const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-      const day = date.getDate().toString();
-      const datetime = date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
+    const events = hangouts.map((h) => {
+      const date = new Date(h.date);
+      const attendees = rsvps
+        .filter((r) => r.hangout.toString() === h._id.toString())
+        .map((r) => ({
+          id: (r.user as any)._id.toString(),
+          name: (r.user as any).name,
+          avatarUrl:
+            (r.user as any).profilePicture ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              (r.user as any).name
+            )}&background=random`,
+        }));
 
       return {
-        eventId: hangout.uuid,
-        month,
-        day,
-        title: hangout.title,
-        location: hangout.location.address,
-        datetime,
-        host: (hangout.host as any).name,
-        status: 'Just Viewed' as const,
-        price: 'Free',
-        imageUrl: (hangout as any).imageUrl || `https://source.unsplash.com/800x600/?event,${encodeURIComponent(hangout.title)}`,
+        id: h._id.toString(),
+        title: h.title,
+        datetime: date.toISOString(),
+        host: (h.host as any)?.name || "Anonymous",
+        location: h.location?.address || "Unknown",
+        coordinates: h.location?.coordinates
+          ? { lat: h.location.coordinates[1], lng: h.location.coordinates[0] }
+          : null,
+        imageUrl:
+          h.imageUrl ||
+          `https://source.unsplash.com/800x600/?event,${encodeURIComponent(
+            h.title
+          )}`,
+        status: h.status || "Upcoming",
+        price: "Free",
         attendees,
-        registrationUrl: `/events/${hangout.uuid}`,
-        coordinates: hangout.location.coordinates
       };
     });
 
-    return res.status(200).json({
-      success: true,
-      events
-    });
-
-  } catch (error) {
-    console.error('Error fetching hangouts:', error);
+    return res.status(200).json({ success: true, events });
+  } catch (err: any) {
+    console.error("❌ Error fetching hangouts:", err);
     return res.status(500).json({
-      error: 'Failed to fetch hangouts',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: "Failed to fetch hangouts",
+      message: err.message,
     });
   }
 }
