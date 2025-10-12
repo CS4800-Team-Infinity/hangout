@@ -1,3 +1,7 @@
+# This workflow automatically deploys the HangOut app to an AWS EC2 instance
+# Runs on every push to the main branch, pulling the latest code,
+# rebuilding the app, cleaning up logs/temp files, and restarting PM2.
+
 name: Deploy HangOut to EC2
 
 on:
