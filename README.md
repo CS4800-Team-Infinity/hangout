@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HangOut
 
-## Getting Started
+**Created by Team Infinity**
 
-First, run the development server:
+**Live App:** [https://gethangout.app/](https://gethangout.app/)  
+**User Interview:** [Watch on YouTube](https://youtu.be/jqmnkv4wU08?si=T1F_KG1ao9YScLtf)  
+**Live Demo:** Coming soon
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Overview
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**HangOut** is a social web application built by **Team Infinity** that helps users discover local activities, meet new people, and explore events based on shared interests.  
+The platform features an **interactive map** that visualizes nearby hangout spots and events, allowing users to connect and engage with their community in real time.  
+It offers a personalized and seamless experience with a modern, responsive design and smart recommendations.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+**Frontend & Backend (Full-Stack Next.js):**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js (React + TypeScript)
+- Next.js API Routes for server-side logic
+- MongoDB for data persistence
+- Tailwind CSS for styling
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Infrastructure & Deployment:**
 
-## Deploy on Vercel
+- AWS EC2
+- PM2 for process management
+- GitHub Actions for CI/CD (auto-deploy on `main` branch push)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Getting Started (Development)
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/CS4800-Team-Infinity/hangout.git
+   cd hangout
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
+
+3. **Run the development server**
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   ```
+
+   Then open [http://localhost:3000](http://localhost:3000) in your browser.
+
+4. **Build for production**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+---
+
+## Deployment
+
+The HangOut web app is hosted on AWS EC2, with continuous deployment handled by GitHub Actions.
+Every push to the main branch automatically:
+
+- Fetches the latest code
+- Installs dependencies
+- Builds the app
+- Cleans old logs and temporary files
+- Restarts PM2 for production
+
+---
+
+## Team Infinity
+
+- **[Tam Tran](https://github.com/itistamtran)**
+- **[Kenneth Chau](https://github.com/contactkc)**
+- **[David Torres](https://github.com/datorres335)**
+- **[Kira Inman](https://github.com/CranKinman)**
+
+## Professor
+
+**[Dr. Yu Sun](http://yusun.io)**
+**Course:** CS4800 — Fall 2025
+
+This project was developed as part of **CS4800 - Software Engineering** under the guidance of Dr. Yu Sun.
