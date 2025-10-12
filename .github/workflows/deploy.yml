@@ -24,6 +24,32 @@ jobs:
             cd /home/ec2-user/hangout
             git fetch origin main
             git reset --hard origin/main
+
+            echo "Installing dependencies..."
             npm ci --force
+
+            echo "Building the app..."
             npm run build
+
+            echo "Clearing old PM2 logs..."
+            pm2 flush
+
+            echo "Cleaning up old temp files (older than 1 day)..."
+            # This lists what’s being deleted before removing it
+            sudo find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -print -exec rm -rf {} +
+            echo "Cleanup complete."
+
+            echo "Restarting PM2 process..."
             pm2 restart hangout --update-env || pm2 start npm --name "hangout" -- start
+
+            echo ""
+            echo "===== System Resource Report ====="
+            echo "Disk usage:"
+            df -h | grep -E '^Filesystem|/dev/'
+            echo ""
+            echo "Memory usage:"
+            free -h
+            echo "====================================="
+            echo ""
+
+            echo "Deployment completed successfully on $(date)"
