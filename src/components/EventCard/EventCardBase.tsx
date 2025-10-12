@@ -57,7 +57,6 @@ export default function EventCardBase({
   const [saved, setSaved] = useState(status === "Saved");
   const [isSharing, setIsSharing] = useState(false);
 
-  // --- Format date safely ---
   const formattedDate = datetime
     ? (() => {
         const dateObj =
@@ -73,7 +72,6 @@ export default function EventCardBase({
       })()
     : "Date not available";
 
-  // --- Auto-extract month and day if not provided ---
   const dateObj = datetime ? new Date(datetime) : null;
   const displayMonth =
     month ||
@@ -82,13 +80,17 @@ export default function EventCardBase({
       : "");
   const displayDay = day || (dateObj ? dateObj.getDate().toString() : "");
 
-  // --- Host name fallback ---
   const hostName =
     typeof host === "string" ? host : host?.name ?? "Unknown Host";
 
-  // --- Online/Offline logic ---
   const isOnline = location?.toLowerCase().includes("online");
   const locationBadge = isOnline ? "Online" : "Offline";
+
+  const handleCardClick = () => {
+    if (eventId) {
+      window.location.href = `/events/${eventId}`;
+    }
+  };
 
   const handleJoin = () => {
     setStatus("Joined");
@@ -127,7 +129,6 @@ export default function EventCardBase({
       });
     } catch (error) {
       console.error("Error updating favorite:", error);
-      // Rollback UI if DB request fails
       setSaved(!saved);
       setStatus(saved ? "Saved" : "Just Viewed");
     }
@@ -135,9 +136,13 @@ export default function EventCardBase({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
+      if (!menuRef.current) return;
+
+      const target = e.target as Node;
+      if (menuRef.current.contains(target)) return;
+      if ((target as HTMLElement).closest("button")) return;
+
+      setMenuOpen(false);
     };
 
     if (menuOpen) {
@@ -151,7 +156,9 @@ export default function EventCardBase({
 
   return (
     <div
-      className={`relative rounded-xl border bg-transparent shadow-sm ${className}`}
+      className={`relative rounded-xl border bg-transparent shadow-sm overflow-visible ${
+        menuOpen ? "z-[9999]" : ""
+      } ${className}`}
     >
       {variant === "home" ? (
         // --- HOME STYLE ---
@@ -168,6 +175,7 @@ export default function EventCardBase({
                 aria-label={saved ? "Unsave Event" : "Save Event"}
                 onClick={(e) => {
                   e.stopPropagation();
+                  e.preventDefault();
                   handleToggleFavorite();
                 }}
                 className="absolute top-2 right-2 bg-white/80 p-1 rounded-full"
@@ -199,7 +207,6 @@ export default function EventCardBase({
             <p className="text-xs text-gray-600">by {hostName}</p>
 
             <div className="flex items-center justify-between mt-2">
-              {/* Left side: attendees (only show if there are any) */}
               {attendees.length > 0 ? (
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
@@ -218,10 +225,9 @@ export default function EventCardBase({
                   </span>
                 </div>
               ) : (
-                <div /> // keeps layout balanced when no attendees
+                <div />
               )}
 
-              {/* Right side: Share + More actions */}
               <div className="flex items-center gap-2 text-gray-600">
                 {/* Share */}
                 <button
@@ -229,7 +235,9 @@ export default function EventCardBase({
                   aria-label="Share Event"
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (isSharing) return; // prevent double trigger
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    if (isSharing) return;
                     setIsSharing(true);
                     if (navigator.share) {
                       navigator.share({
@@ -259,6 +267,8 @@ export default function EventCardBase({
                     aria-label="More Actions"
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
+                      setIsSharing(false);
                       setMenuOpen((prev) => !prev);
                     }}
                   >
@@ -266,11 +276,13 @@ export default function EventCardBase({
                   </button>
 
                   {menuOpen && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-20">
-                      <ul className="text-sm">
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-[10000]">
+                      <ul className="text-sm relative z-[10000]">
                         <li
                           className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
                             handleViewDetails();
                             setMenuOpen(false);
                           }}
@@ -280,7 +292,9 @@ export default function EventCardBase({
                         {status !== "Joined" && (
                           <li
                             className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
                               handleJoin();
                               setMenuOpen(false);
                             }}
@@ -291,7 +305,9 @@ export default function EventCardBase({
                         {status === "Joined" && (
                           <li
                             className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
                               handleLeave();
                               setMenuOpen(false);
                             }}
@@ -310,9 +326,7 @@ export default function EventCardBase({
       ) : (
         // --- LIST STYLE ---
         <div className="flex flex-col w-full min-h-[140px] p-3">
-          {/* Row 1 (Date + Image) on small, full info on md+ */}
           <div className="flex items-center gap-2 md:gap-3 pl-1">
-            {/* Date */}
             <div className="flex flex-col items-center justify-center w-8 md:w-10 font-bold shrink-0">
               <span className="uppercase text-sm bg-gradient-to-r from-[#7879F1] to-[#F178B6] bg-clip-text text-transparent">
                 {displayMonth}
@@ -320,7 +334,6 @@ export default function EventCardBase({
               <span className="text-lg text-black">{displayDay}</span>
             </div>
 
-            {/* Image */}
             <img
               src={imageUrl || "/placeholder.jpg"}
               alt={title}
@@ -329,7 +342,6 @@ export default function EventCardBase({
               }`}
             />
 
-            {/* Title & info (desktop) */}
             <div className="hidden md:flex flex-col justify-center ml-2 flex-1">
               <h3 className="font-semibold text-black text-base">{title}</h3>
               <p className="text-sm text-gray-600">{location}</p>
@@ -337,7 +349,6 @@ export default function EventCardBase({
             </div>
           </div>
 
-          {/* Mobile-only: Title, Location, Datetime */}
           <div className="flex flex-col md:hidden mt-2">
             <h3 className="font-semibold text-black text-sm sm:text-base">
               {title}
@@ -346,17 +357,13 @@ export default function EventCardBase({
             <p className="text-xs text-gray-500">{formattedDate}</p>
           </div>
 
-          {/* Row 2 (Host + Status + Price + Actions on desktop) */}
           <div className="flex justify-between items-center text-xs text-gray-700 mt-3 flex-wrap gap-2">
-            {/* Left side */}
             <div className="flex gap-6 md:gap-8">
-              {/* Host shown only on desktop */}
               <span className="hidden md:inline">Host: {hostName}</span>
               <span>Status: {status}</span>
               <span>{price === "Free" ? "Free" : `$${price}`}</span>
             </div>
 
-            {/* Actions */}
             {actions && (
               <div className="flex gap-2 text-gray-600 relative z-10">
                 <button
@@ -364,6 +371,7 @@ export default function EventCardBase({
                   aria-label={saved ? "Unsave Event" : "Save Event"}
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     handleToggleFavorite();
                   }}
                 >
@@ -384,6 +392,8 @@ export default function EventCardBase({
                   aria-label="Share Event"
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
+                    setMenuOpen(false);
                     if (navigator.share) {
                       navigator.share({
                         title,
@@ -405,12 +415,14 @@ export default function EventCardBase({
                   <Share2 size={16} />
                 </button>
 
-                <div className="relative">
+                <div className="relative" ref={menuRef}>
                   <button
                     type="button"
                     aria-label="More Actions"
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
+                      setIsSharing(false);
                       setMenuOpen((prev) => !prev);
                     }}
                   >
@@ -418,18 +430,28 @@ export default function EventCardBase({
                   </button>
 
                   {menuOpen && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-20">
-                      <ul className="text-sm">
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-[10000]">
+                      <ul className="text-sm relative z-[10000]">
                         <li
                           className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={handleViewDetails}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleViewDetails();
+                            setMenuOpen(false);
+                          }}
                         >
                           View Details
                         </li>
                         {status !== "Joined" && (
                           <li
                             className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                            onClick={handleJoin}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleJoin();
+                              setMenuOpen(false);
+                            }}
                           >
                             Join Event
                           </li>
@@ -437,7 +459,12 @@ export default function EventCardBase({
                         {status === "Joined" && (
                           <li
                             className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                            onClick={handleLeave}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleLeave();
+                              setMenuOpen(false);
+                            }}
                           >
                             Leave Event
                           </li>

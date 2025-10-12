@@ -69,7 +69,7 @@ export default function EventsPage() {
       {!loading && (
         <p className="text-gray-600 mb-6">
           {events.length > 0
-            ? `You are seeing ${events.length} event${
+            ? `Showing ${events.length} event${
                 events.length > 1 ? "s..." : "..."
               }`
             : ""}
