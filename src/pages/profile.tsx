@@ -261,6 +261,33 @@ const Profile = () => {
             <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
             
             <form onSubmit={updateProfile} className="space-y-6">
+              <div className="flex flex-col items-center mb-8">
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-zinc-200 border-4 border-zinc-300">
+                    {user?.profilePicture ? (
+                      <img
+                        src={user.profilePicture}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-zinc-500 text-4xl font-semibold">
+                        {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="absolute bottom-0 right-0 bg-black text-white rounded-full p-2 hover:bg-zinc-800 transition-colors hover:cursor-pointer"
+                    title="Change profile picture"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="name" className="mb-2">Full Name</Label>
