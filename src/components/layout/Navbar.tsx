@@ -123,14 +123,15 @@ export function Navbar() {
               <div className="text-sm text-zinc-400">login...</div>
             ) : isAuthenticated && user ? (
               <>
-                <div className="hidden sm:block text-sm text-zinc-400">
-                  welcome, {user.name}!
-                </div>
+                <Link 
+                  href="/profile"
+                  className="hidden sm:block text-md font-semibold text-black transition-colors hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#5D5FEF] hover:to-[#EF5DA8]">
+                  Welcome, {user.name}!
+                </Link>
                 <Button
                   onClick={handleLogout}
-                  variant="outline"
                   size="sm"
-                  className="text-md text-black border border-zinc-300 transition-all hover:text-white hover:bg-gradient-to-r hover:from-[#EF5DA8] hover:to-[#5D5FEF]"
+                  className="text-md font-semibold text-black bg-white border border-zinc-300 hover:text-white hover:bg-gradient-to-r hover:from-[#EF5DA8] hover:to-[#5D5FEF] transition-all hover: cursor-pointer"
                 >
                   logout
                 </Button>
