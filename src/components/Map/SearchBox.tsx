@@ -84,14 +84,15 @@ export default function SearchBox({
     setOpen(false);
     onSelect?.(item);
 
-    // Go to Map page with the chosen coordinates
+    // Go to Search Results page with the chosen coordinates
     const lat = Number(item.lat);
     const lng = Number(item.lon);
-    router.push(
-      `/map?lat=${lat}&lng=${lng}&city=${encodeURIComponent(
-        item.city || item.label
-      )}`
-    );
+    const params = new URLSearchParams();
+    params.append("lat", lat.toString());
+    params.append("lng", lng.toString());
+    params.append("city", item.city || item.label);
+    
+    router.push(`/search?${params.toString()}`);
   };
 
   return (

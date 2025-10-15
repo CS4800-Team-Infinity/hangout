@@ -128,6 +128,13 @@ body {
   .link-gradient {
     @apply transition duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#5D5FEF] hover:to-[#EF5DA8];
   }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 @layer components {

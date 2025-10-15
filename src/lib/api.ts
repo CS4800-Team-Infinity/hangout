@@ -33,6 +33,8 @@ export interface AuthResponse {
 const API_BASE_URL =
   process.env.NODE_ENV === "production"
     ? "https://gethangout.app/"
+    : typeof window !== "undefined"
+    ? window.location.origin
     : "http://localhost:3000";
 
 const apiCall = async <T>(

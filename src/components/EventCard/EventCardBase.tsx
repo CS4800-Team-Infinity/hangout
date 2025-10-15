@@ -149,7 +149,7 @@ export default function EventCardBase({
 
   return (
     <div
-      className={`relative rounded-xl border bg-transparent shadow-sm overflow-visible ${
+      className={`relative rounded-xl border bg-white shadow-sm overflow-visible cursor-pointer ${
         shareOpen || actionOpen ? "z-[9999]" : ""
       } ${className}`}
       onClick={(e) => {
@@ -171,8 +171,8 @@ export default function EventCardBase({
         if (eventId) router.push(`/events/${eventId}`);
       }}
     >
-      <div className="flex flex-col">
-        <div className="relative">
+      <div className="flex flex-col h-full">
+        <div className="relative flex-shrink-0">
           <img
             src={imageUrl || "/placeholder.jpg"}
             alt={title}
@@ -187,7 +187,7 @@ export default function EventCardBase({
                 e.preventDefault();
                 handleToggleFavorite();
               }}
-              className="absolute top-2 right-2 bg-white/80 p-1 rounded-full"
+              className="absolute top-2 right-2 bg-white/80 p-1.5 rounded-full hover:bg-white transition-colors"
             >
               <Heart
                 size={18}
@@ -199,8 +199,8 @@ export default function EventCardBase({
           )}
         </div>
 
-        <div className="p-3 flex flex-col gap-1">
-          <p className="text-xs text-gray-500 flex items-center gap-2">
+        <div className="p-4 flex flex-col gap-2 flex-grow">
+          <p className="text-xs text-gray-500 flex items-center gap-2 flex-wrap">
             {formattedDate}
             <span
               className={`px-2 py-0.5 border rounded-full text-xs ${
@@ -213,11 +213,11 @@ export default function EventCardBase({
             </span>
           </p>
 
-          <h3 className="font-semibold text-black line-clamp-2">{title}</h3>
+          <h3 className="font-semibold text-black line-clamp-2 text-base">{title}</h3>
           <p className="text-xs text-gray-600">by {hostName}</p>
 
-          <div className="flex items-center justify-between mt-2">
-            {attendees.length > 0 && (
+          <div className="flex items-center justify-between mt-auto pt-2">
+            {attendees.length > 0 ? (
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-2">
                   {attendees.slice(0, 3).map((attendee) => (
@@ -225,7 +225,7 @@ export default function EventCardBase({
                       key={attendee.id}
                       src={attendee.avatarUrl}
                       alt={attendee.name}
-                      className="w-6 h-6 rounded-full border"
+                      className="w-6 h-6 rounded-full border-2 border-white"
                     />
                   ))}
                 </div>
@@ -234,9 +234,11 @@ export default function EventCardBase({
                   {attendees.length > 1 ? "s" : ""}
                 </span>
               </div>
+            ) : (
+              <div className="text-xs text-gray-400">No attendees yet</div>
             )}
 
-            <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex items-center gap-3 text-gray-600">
               {/* Share */}
               <div className="relative share-menu" ref={shareRef}>
                 <button
@@ -249,6 +251,7 @@ export default function EventCardBase({
                     setActionOpen(false);
                     setShareOpen((prev) => !prev);
                   }}
+                  className="hover:text-purple-600 transition-colors"
                 >
                   <Share2 size={18} />
                 </button>
@@ -275,6 +278,7 @@ export default function EventCardBase({
                     setShareOpen(false);
                     setActionOpen((prev) => !prev);
                   }}
+                  className="hover:text-purple-600 transition-colors"
                 >
                   <MoreHorizontal size={18} />
                 </button>

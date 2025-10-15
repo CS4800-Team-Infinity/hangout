@@ -6,12 +6,10 @@ export default function EventCardList(props: EventCardProps) {
       {...props}
       variant="list"
       className="
-        w-[70%] sm:w-[60%] md:w-[520px] 
-        h-[240px] sm:h-[260px] md:h-[160px] 
-        mx-auto 
-        bg-white rounded-2xl shadow-md 
-        p-3 sm:p-4 md:p-5 
+        w-full
+        bg-white rounded-2xl shadow-md
         transition-all duration-300
+        hover:shadow-lg
       "
     />
   );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import SearchBox from "@/components/Map/SearchBox";
@@ -17,6 +18,7 @@ type SuggestItem = {
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
   const [q, setQ] = useState("");
@@ -55,7 +57,13 @@ export function Navbar() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ q, city: city || "Your city" });
+    if (q.trim() || city !== "Your city") {
+      const params = new URLSearchParams();
+      if (q.trim()) params.append("q", q.trim());
+      if (city !== "Your city") params.append("city", city);
+      
+      router.push(`/search?${params.toString()}`);
+    }
   };
 
   return (
