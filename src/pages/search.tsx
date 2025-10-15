@@ -16,10 +16,12 @@ function MapContent({
   searchQuery,
   mapCenter,
   onVisibleEventsChange,
+  onSearchStatus,
 }: {
   searchQuery: string;
   mapCenter: { lat: number; lng: number };
   onVisibleEventsChange: (events: HangoutEvent[]) => void;
+  onSearchStatus: (status: { found: boolean; type: "city" | "event" | "none" }) => void;
 }) {
   const map = useMap();
   const [allEvents, setAllEvents] = useState<HangoutEvent[]>([]);
@@ -72,31 +74,86 @@ function MapContent({
 
           // Filter by search query if provided
           let filteredEvents = eventsWithCoords;
+          let foundEvent: HangoutEvent | null = null;
+
           if (searchQuery.trim()) {
+            const lowerQuery = searchQuery.toLowerCase();
+
+            // First, try to find an exact or close match for event title
+            foundEvent = eventsWithCoords.find(
+              (event) => event.title.toLowerCase() === lowerQuery
+            ) || eventsWithCoords.find(
+              (event) => event.title.toLowerCase().includes(lowerQuery)
+            ) || null;
+
+            // Filter events that match the search term in title, location, or host
+            // This is more lenient - shows all events in the area PLUS any that match the query text
             filteredEvents = eventsWithCoords.filter(
-              (event) =>
-                event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (typeof event.location === "string"
-                  ? event.location.toLowerCase().includes(searchQuery.toLowerCase())
-                  : event.location?.address
-                      ?.toLowerCase()
-                      .includes(searchQuery.toLowerCase())) ||
-                (typeof event.host === "object" && event.host?.name
-                  ? event.host.name.toLowerCase().includes(searchQuery.toLowerCase())
-                  : false)
+              (event) => {
+                // Check if title contains the search query
+                if (event.title.toLowerCase().includes(lowerQuery)) {
+                  return true;
+                }
+
+                // Check if location address contains the search query
+                const locationMatch = typeof event.location === "string"
+                  ? event.location.toLowerCase().includes(lowerQuery)
+                  : event.location?.address?.toLowerCase().includes(lowerQuery);
+
+                if (locationMatch) {
+                  return true;
+                }
+
+                // Check if host name contains the search query
+                if (typeof event.host === "object" && event.host?.name) {
+                  if (event.host.name.toLowerCase().includes(lowerQuery)) {
+                    return true;
+                  }
+                }
+
+                // If the search query doesn't match title/location/host,
+                // but we have coordinates from a city search, include all events
+                // This handles the case: user searches "Pomona" → show all Pomona events
+                return true;
+              }
             );
+
+            // Update search status
+            if (foundEvent) {
+              onSearchStatus({ found: true, type: "event" });
+            } else if (filteredEvents.length > 0) {
+              onSearchStatus({ found: true, type: "city" });
+            } else {
+              onSearchStatus({ found: false, type: "none" });
+            }
+          } else {
+            onSearchStatus({ found: true, type: "city" });
           }
 
           setAllEvents(filteredEvents);
 
-          // Fit map to show all events
+          // Focus map based on search results
           if (map && filteredEvents.length > 0) {
-            const bounds = new google.maps.LatLngBounds();
-            filteredEvents.forEach(
-              (e) => e.coordinates && bounds.extend(e.coordinates)
-            );
-            bounds.extend(mapCenter);
-            map.fitBounds(bounds, 64);
+            if (foundEvent && foundEvent.coordinates) {
+              // If we found a specific event, zoom directly to it
+              map.setCenter(foundEvent.coordinates);
+              map.setZoom(16);
+
+              // Auto-select the event to show info window
+              setSelectedEvent(foundEvent);
+            } else {
+              // Otherwise, fit bounds to show all matching events
+              const bounds = new google.maps.LatLngBounds();
+              filteredEvents.forEach(
+                (e) => e.coordinates && bounds.extend(e.coordinates)
+              );
+              bounds.extend(mapCenter);
+              map.fitBounds(bounds, 64);
+            }
+          } else if (map && !searchQuery.trim()) {
+            // No search query, just center on the location
+            map.setCenter(mapCenter);
+            map.setZoom(12);
           }
         }
       } catch (error) {
@@ -169,9 +226,9 @@ function MapContent({
 
       {userLocation && <UserLocationMarker userLocation={userLocation} />}
 
-      {allEvents.map((event) => (
+      {allEvents.map((event, index) => (
         <EventMarker
-          key={event.uuid || event._id}
+          key={event.uuid || event._id || `event-marker-${index}`}
           event={event}
           isSelected={
             selectedEvent
@@ -232,6 +289,10 @@ export default function SearchResults() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
   const [visibleEvents, setVisibleEvents] = useState<HangoutEvent[]>([]);
+  const [searchStatus, setSearchStatus] = useState<{
+    found: boolean;
+    type: "city" | "event" | "none";
+  }>({ found: true, type: "city" });
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({
     lat: 34.0585684,
     lng: -117.8226053,
@@ -242,7 +303,7 @@ export default function SearchResults() {
       const query = (q as string) || "";
       const latitude = lat ? parseFloat(lat as string) : 34.0585684;
       const longitude = lng ? parseFloat(lng as string) : -117.8226053;
-      const location = (city as string) || "Pomona";
+      const location = (city as string);
 
       setSearchQuery(query);
       setSearchLocation(location);
@@ -256,6 +317,10 @@ export default function SearchResults() {
 
   const handleVisibleEventsChange = useCallback((events: HangoutEvent[]) => {
     setVisibleEvents(events);
+  }, []);
+
+  const handleSearchStatus = useCallback((status: { found: boolean; type: "city" | "event" | "none" }) => {
+    setSearchStatus(status);
   }, []);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -339,6 +404,7 @@ export default function SearchResults() {
                   searchQuery={searchQuery}
                   mapCenter={mapCenter}
                   onVisibleEventsChange={handleVisibleEventsChange}
+                  onSearchStatus={handleSearchStatus}
                 />
               </Map>
             </APIProvider>
@@ -349,8 +415,22 @@ export default function SearchResults() {
             <div className="p-6 h-full flex flex-col">
               <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Search Results for "{searchLocation}"
+                  {searchQuery
+                    ? `Search Results for "${searchQuery}"`
+                    : `Search Results for "${searchLocation}"`}
                 </h1>
+
+                {!searchStatus.found && searchQuery && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                    <p className="text-yellow-800 text-sm font-medium">
+                      ⚠️ No results found for "{searchQuery}"
+                    </p>
+                    <p className="text-yellow-700 text-xs mt-1">
+                      Try searching for a different event name or city, or browse events near {searchLocation}.
+                    </p>
+                  </div>
+                )}
+
                 <p className="text-gray-600 text-sm">
                   Browse events and explore them on the interactive map. Pan and
                   zoom to filter the list.
@@ -358,7 +438,7 @@ export default function SearchResults() {
                 <p className="text-gray-500 text-sm mt-2">
                   Showing {visibleEvents.length} event
                   {visibleEvents.length !== 1 ? "s" : ""} in the visible area
-                  {searchQuery && ` matching "${searchQuery}"`}
+                  {searchQuery && searchStatus.found && ` matching "${searchQuery}"`}
                 </p>
               </div>
 
@@ -371,9 +451,9 @@ export default function SearchResults() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {visibleEvents.map((event) => (
+                    {visibleEvents.map((event, index) => (
                       <EventCardList
-                        key={event.uuid || event._id}
+                        key={event.uuid || event._id || `event-list-${index}`}
                         month={event.month}
                         day={event.day}
                         title={event.title}

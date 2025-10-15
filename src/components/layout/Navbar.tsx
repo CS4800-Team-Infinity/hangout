@@ -23,6 +23,7 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [q, setQ] = useState("");
   const [city, setCity] = useState<string>("Your city");
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -55,15 +56,70 @@ export function Navbar() {
 
   const handleLogout = () => logout();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (q.trim() || city !== "Your city") {
-      const params = new URLSearchParams();
-      if (q.trim()) params.append("q", q.trim());
-      if (city !== "Your city") params.append("city", city);
-      
-      router.push(`/search?${params.toString()}`);
+    console.log("🔍 handleSearch called with q:", q, "city:", city);
+
+    if (!q.trim() && city === "Your city") {
+      console.log("⚠️ No search term or city, returning early");
+      return;
     }
+
+    const params = new URLSearchParams();
+
+    // Determine what to search for
+    const searchTerm = q.trim() || city;
+    console.log("🔍 Search term:", searchTerm);
+
+    // Always add the search query
+    if (q.trim()) {
+      params.append("q", q.trim());
+    }
+
+    // Try to geocode the search term to get coordinates
+    if (selectedLocation) {
+      // User explicitly selected a location from dropdown
+      console.log("📍 Using selected location:", selectedLocation);
+      params.append("lat", selectedLocation.lat.toString());
+      params.append("lng", selectedLocation.lng.toString());
+      params.append("city", city !== "Your city" ? city : "Selected Location");
+    } else {
+      // Try to geocode the search term (could be city name or location)
+      try {
+        console.log("🌐 Geocoding search term:", searchTerm);
+        const response = await fetch(`/api/place-suggest?q=${encodeURIComponent(searchTerm)}`);
+        console.log("🌐 Geocode response status:", response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("🌐 Geocode data:", data);
+
+          if (data.suggestions && data.suggestions.length > 0) {
+            const firstResult = data.suggestions[0];
+            console.log("✅ Found geocode result:", firstResult);
+            params.append("lat", firstResult.lat);
+            params.append("lng", firstResult.lon);
+            params.append("city", firstResult.city || firstResult.label);
+          } else if (city !== "Your city") {
+            // Fallback to current city
+            console.log("⚠️ No geocode results, using current city:", city);
+            params.append("city", city);
+          }
+        } else if (city !== "Your city") {
+          console.log("⚠️ Geocode failed, using current city:", city);
+          params.append("city", city);
+        }
+      } catch (error) {
+        console.error("❌ Error geocoding:", error);
+        if (city !== "Your city") {
+          params.append("city", city);
+        }
+      }
+    }
+
+    const searchUrl = `/search?${params.toString()}`;
+    console.log("🚀 Navigating to:", searchUrl);
+    router.push(searchUrl);
   };
 
   return (
@@ -114,12 +170,23 @@ export function Navbar() {
                   {/* Reusable SearchBox component */}
                   <SearchBox
                     initialCity={city}
+                    disableAutoNavigation={true}
                     onSelect={(selected: SuggestItem) => {
                       setCity(selected.city || selected.label);
-                      console.log("Selected city:", selected);
-                      // Later: trigger map update or context change here
+                      setSelectedLocation({
+                        lat: parseFloat(selected.lat),
+                        lng: parseFloat(selected.lon),
+                      });
                     }}
                   />
+
+                  {/* Search Button */}
+                  <button
+                    type="submit"
+                    className="ml-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white text-sm font-semibold hover:from-[#EF5DA8] hover:to-[#5D5FEF] transition-all"
+                  >
+                    Search
+                  </button>
                 </div>
               </div>
             </form>
@@ -181,11 +248,23 @@ export function Navbar() {
 
                 <SearchBox
                   initialCity={city}
+                  disableAutoNavigation={true}
                   onSelect={(selected: SuggestItem) => {
                     setCity(selected.city || selected.label);
-                    console.log("Selected city (mobile):", selected);
+                    setSelectedLocation({
+                      lat: parseFloat(selected.lat),
+                      lng: parseFloat(selected.lon),
+                    });
                   }}
                 />
+
+                {/* Search Button */}
+                <button
+                  type="submit"
+                  className="ml-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white text-xs font-semibold hover:from-[#EF5DA8] hover:to-[#5D5FEF] transition-all"
+                >
+                  Go
+                </button>
               </div>
             </div>
           </form>

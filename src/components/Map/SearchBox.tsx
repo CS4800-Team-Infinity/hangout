@@ -12,11 +12,13 @@ type SuggestItem = {
 interface SearchBoxProps {
   initialCity?: string;
   onSelect?: (selected: SuggestItem) => void;
+  disableAutoNavigation?: boolean; // When true, don't auto-navigate on selection
 }
 
 export default function SearchBox({
   initialCity = "",
   onSelect,
+  disableAutoNavigation = false,
 }: SearchBoxProps) {
   const router = useRouter();
   const [city, setCity] = useState(initialCity);
@@ -65,15 +67,41 @@ export default function SearchBox({
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (disableAutoNavigation) {
+        // Don't handle Enter, let parent form handle it
+        if (open && items.length > 0 && active >= 0) {
+          // Just select the item without navigating
+          const item = items[active];
+          setCity(item.city || item.label);
+          setOpen(false);
+          onSelect?.(item);
+          e.preventDefault();
+        }
+        // Otherwise, let the form submit naturally
+        return;
+      }
+
+      // Normal behavior when not in a form
+      e.preventDefault();
+      if (open && items.length > 0 && active >= 0) {
+        // Select from dropdown
+        selectItem(items[active]);
+      } else {
+        // Direct search
+        handleDirectSearch();
+      }
+      return;
+    }
+
     if (!open || !items.length) return;
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActive((i) => Math.min(i + 1, items.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter" && active >= 0) {
-      selectItem(items[active]);
     } else if (e.key === "Escape") {
       setOpen(false);
     }
@@ -84,14 +112,27 @@ export default function SearchBox({
     setOpen(false);
     onSelect?.(item);
 
-    // Go to Search Results page with the chosen coordinates
-    const lat = Number(item.lat);
-    const lng = Number(item.lon);
+    // Only navigate if auto-navigation is enabled
+    if (!disableAutoNavigation) {
+      // Go to Search Results page with the chosen coordinates
+      const lat = Number(item.lat);
+      const lng = Number(item.lon);
+      const params = new URLSearchParams();
+      params.append("lat", lat.toString());
+      params.append("lng", lng.toString());
+      params.append("city", item.city || item.label);
+
+      router.push(`/search?${params.toString()}`);
+    }
+  };
+
+  // Handle pressing Enter without selecting from dropdown (direct search)
+  const handleDirectSearch = () => {
+    if (!city.trim()) return;
+
     const params = new URLSearchParams();
-    params.append("lat", lat.toString());
-    params.append("lng", lng.toString());
-    params.append("city", item.city || item.label);
-    
+    params.append("q", city.trim());
+
     router.push(`/search?${params.toString()}`);
   };
 
