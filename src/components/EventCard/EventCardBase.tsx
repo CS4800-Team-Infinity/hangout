@@ -2,6 +2,7 @@ import { Heart, MoreHorizontal, Share2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ShareMenu from "../common/ShareMenu";
+import Link from "next/link";
 
 export type Attendee = {
   id: string;
@@ -165,7 +166,6 @@ export default function EventCardBase({
           target.closest(".action-menu")
         ) {
           e.stopPropagation();
-          e.preventDefault();
           isShareClickRef.current = false;
           return;
         }
@@ -189,6 +189,7 @@ export default function EventCardBase({
                   aria-label={saved ? "Unsave Event" : "Save Event"}
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     handleToggleFavorite();
                   }}
                   className="absolute top-2 right-2 bg-white/80 p-1 rounded-full"
@@ -379,7 +380,6 @@ export default function EventCardBase({
                   aria-label="Share Event"
                   onClick={(e) => {
                     e.stopPropagation();
-                    e.preventDefault();
                     isShareClickRef.current = true;
                     setShareOpen((prev) => !prev);
                     setActionOpen(false);
@@ -404,7 +404,6 @@ export default function EventCardBase({
                 aria-label={saved ? "Unsave Event" : "Save Event"}
                 onClick={(e) => {
                   e.stopPropagation();
-                  e.preventDefault();
                   handleToggleFavorite();
                 }}
                 className="hover:text-purple-600 transition-colors"
@@ -441,14 +440,20 @@ export default function EventCardBase({
                   <ul className="text-sm">
                     <li
                       className="menu-item px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={handleViewDetails}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails();
+                      }}
                     >
                       View Details
                     </li>
                     {status !== "Joined" && (
                       <li
                         className="menu-item px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={handleJoin}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJoin();
+                        }}
                       >
                         Join Event
                       </li>
@@ -456,7 +461,10 @@ export default function EventCardBase({
                     {status === "Joined" && (
                       <li
                         className="menu-item px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={handleLeave}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLeave();
+                        }}
                       >
                         Leave Event
                       </li>
