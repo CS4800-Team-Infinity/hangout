@@ -4,7 +4,7 @@
 
 **Live App:** [https://gethangout.app/](https://gethangout.app/)  
 **User Interview:** [Watch on YouTube](https://youtu.be/jqmnkv4wU08?si=T1F_KG1ao9YScLtf)  
-**Layout Design:** [Figma](https://www.figma.com/design/KkqxQXsT66wWhePmOrQNDS/Infinity-Hangout-Project?node-id=0-1&p=f&m=draw)
+**Layout Design:** [Figma](https://www.figma.com/design/KkqxQXsT66wWhePmOrQNDS/Infinity-Hangout-Project?node-id=0-1&p=f&m=draw)  
 **Live Demo:** Coming soon
 
 ---
