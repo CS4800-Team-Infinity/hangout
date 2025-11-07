@@ -48,7 +48,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/help" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Help
                 </a>
               </li>
@@ -62,27 +62,27 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
-                <a href="/groups" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Group
                 </a>
               </li>
               <li>
-                <a href="/events" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Events
                 </a>
               </li>
               <li>
-                <a href="/topics" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Topic
                 </a>
               </li>
               <li>
-                <a href="/online-events" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Online event
                 </a>
               </li>
               <li>
-                <a href="/mapview" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Map View
                 </a>
               </li>
@@ -101,22 +101,22 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/contact" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Contact us
                 </a>
               </li>
               <li>
-                <a href="/pricing" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Pricing
                 </a>
               </li>
               <li>
-                <a href="/faqs" className="link-gradient">
+                <a href="/" className="link-gradient">
                   FAQs
                 </a>
               </li>
               <li>
-                <a href="/community-guidelines" className="link-gradient">
+                <a href="/" className="link-gradient">
                   Community Guidelines
                 </a>
               </li>
@@ -171,7 +171,7 @@ export default function Footer() {
 
         {/* Row 3: Copyright */}
         <div className="text-center md:text-left text-sm text-gray-300 pt-4 pb-4">
-          © 2025 Hangout@Infinity. Built with 💜 for CS4800.
+          © 2025 Hangout@Infinity. All rights reserved.
         </div>
       </div>
     </footer>
