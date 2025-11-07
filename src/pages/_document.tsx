@@ -4,6 +4,24 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* Google tag (gtag.js) */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-GP2W6QTV3V"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){window.dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-GP2W6QTV3V', {
+                page_path: window.location.pathname,
+              });
+            `,
+          }}
+        />
+
         <link
           href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap"
           rel="stylesheet"
