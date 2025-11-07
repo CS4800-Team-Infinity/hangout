@@ -9,6 +9,11 @@ export default function Document() {
           rel="stylesheet"
         />
         <link rel="icon" href="/infinity-logo.png" type="image/png" />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9547215088350217"
+          crossOrigin="anonymous"
+        ></script>
       </Head>
       <body>
         <Main />
