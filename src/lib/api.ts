@@ -215,6 +215,7 @@ export const hangoutsAPI = {
     isPublic?: boolean;
     lat?: number;
     lng?: number;
+    q?: string; // Search query for event title
   }): Promise<HangoutsListResponse> => {
     const queryParams = new URLSearchParams();
 
@@ -230,6 +231,11 @@ export const hangoutsAPI = {
     if (params?.lat && params?.lng) {
       queryParams.append("lat", params.lat.toString());
       queryParams.append("lng", params.lng.toString());
+    }
+
+    // Include search query if provided
+    if (params?.q && params.q.trim()) {
+      queryParams.append("q", params.q.trim());
     }
 
     const query = queryParams.toString();

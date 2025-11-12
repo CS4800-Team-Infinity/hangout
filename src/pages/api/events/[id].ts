@@ -26,9 +26,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleGetEvent(req: NextApiRequest, res: NextApiResponse, eventId: string) {
   try {
-    const event = await Hangout.findOne({
-      $or: [{ _id: eventId }, { uuid: eventId }]
-    }).populate('host', 'name username email bio');
+    // Check if eventId is a valid MongoDB ObjectId (24 hex characters)
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(eventId);
+
+    // Build query based on ID format
+    const query = isValidObjectId
+      ? { $or: [{ _id: eventId }, { uuid: eventId }] }
+      : { uuid: eventId };
+
+    const event = await Hangout.findOne(query).populate('host', 'name username email bio');
 
     if (!event) {
       return res.status(404).json({ success: false, error: 'Event not found' });
@@ -92,9 +98,15 @@ async function handleUpdateEvent(req: NextApiRequest, res: NextApiResponse, even
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     const userId = decoded.userId;
 
-    const event = await Hangout.findOne({
-      $or: [{ _id: eventId }, { uuid: eventId }]
-    });
+    // Check if eventId is a valid MongoDB ObjectId (24 hex characters)
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(eventId);
+
+    // Build query based on ID format
+    const query = isValidObjectId
+      ? { $or: [{ _id: eventId }, { uuid: eventId }] }
+      : { uuid: eventId };
+
+    const event = await Hangout.findOne(query);
 
     if (!event) {
       return res.status(404).json({ success: false, error: 'Event not found' });
@@ -168,9 +180,15 @@ async function handleDeleteEvent(req: NextApiRequest, res: NextApiResponse, even
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     const userId = decoded.userId;
 
-    const event = await Hangout.findOne({
-      $or: [{ _id: eventId }, { uuid: eventId }]
-    });
+    // Check if eventId is a valid MongoDB ObjectId (24 hex characters)
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(eventId);
+
+    // Build query based on ID format
+    const query = isValidObjectId
+      ? { $or: [{ _id: eventId }, { uuid: eventId }] }
+      : { uuid: eventId };
+
+    const event = await Hangout.findOne(query);
 
     if (!event) {
       return res.status(404).json({ success: false, error: 'Event not found' });

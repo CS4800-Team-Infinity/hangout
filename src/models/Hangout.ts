@@ -85,7 +85,7 @@ const HangoutSchema = new Schema<Hangout>(
     },
     isPublic: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {

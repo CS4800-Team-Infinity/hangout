@@ -1,0 +1,527 @@
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
+import EventCardHome from '@/components/EventCard/EventCardHome';
+
+interface EventDetails {
+  _id: string;
+  uuid?: string;
+  title: string;
+  description: string;
+  date: string;
+  location: {
+    address: string;
+    coordinates: [number, number];
+  };
+  host: {
+    _id: string;
+    name: string;
+    username: string;
+    email: string;
+    bio?: string;
+  };
+  imageUrl?: string;
+  maxParticipants?: number;
+  isPublic: boolean;
+  status: string;
+  attendeeCount: number;
+  attendees: Array<{
+    _id: string;
+    name: string;
+    username: string;
+  }>;
+  tags?: string[];
+}
+
+interface RelatedEvent {
+  id?: string;
+  _id?: string;
+  title: string;
+  datetime: string;
+  location?: string;
+  host?: string;
+  imageUrl?: string;
+  attendees?: any[];
+}
+
+export default function EventDetailsPage() {
+  const router = useRouter();
+  const { id } = router.query;
+
+  const [event, setEvent] = useState<EventDetails | null>(null);
+  const [relatedEvents, setRelatedEvents] = useState<RelatedEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchEventDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch event details
+        const token = localStorage.getItem('token');
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`/api/events/${id}`, { headers });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          if (response.status === 404) {
+            setError('Event not found');
+          } else if (response.status === 401 || response.status === 403) {
+            setError('You do not have access to this event');
+          } else {
+            setError(data.error || 'Failed to load event');
+          }
+          return;
+        }
+
+        setEvent(data.event);
+
+        // Fetch related events based on location and tags
+        await fetchRelatedEvents(data.event);
+      } catch (err) {
+        console.error('Error fetching event:', err);
+        setError('Failed to load event details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventDetails();
+  }, [id]);
+
+  const fetchRelatedEvents = async (currentEvent: EventDetails) => {
+    try {
+      // Extract city from address
+      const addressParts = currentEvent.location.address.split(',');
+      const city = addressParts[addressParts.length - 2]?.trim() || 'Pomona';
+
+      // Fetch events from the same city
+      const response = await fetch(
+        `/api/hangouts/list?city=${encodeURIComponent(city)}&status=upcoming&isPublic=true`
+      );
+      const data = await response.json();
+
+      if (data.events && Array.isArray(data.events)) {
+        // Filter out the current event and limit to 4
+        const filtered = data.events
+          .filter((e: RelatedEvent) => {
+            const eventId = e.id || e._id;
+            return eventId !== currentEvent._id && eventId !== currentEvent.uuid;
+          })
+          .slice(0, 4);
+        setRelatedEvents(filtered);
+      }
+    } catch (err) {
+      console.error('Error fetching related events:', err);
+      setRelatedEvents([]);
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleSave = () => {
+    setIsSaved(!isSaved);
+  };
+
+  const handleGetDirections = () => {
+    if (event?.location.coordinates) {
+      const [lng, lat] = event.location.coordinates;
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      window.open(mapsUrl, '_blank');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center mt-16">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D5FEF] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading event details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center mt-16">
+        <div className="text-center max-w-md mx-auto px-4">
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+            {error === 'Event not found' ? '404' : 'Oops!'}
+          </h1>
+          <p className="text-gray-600 mb-6">{error || 'Something went wrong'}</p>
+          <Link href="/events">
+            <Button className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF]">
+              Back to Events
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const eventDate = new Date(event.date);
+  const dayOfWeek = eventDate.toLocaleDateString('en-US', { weekday: 'long' });
+  const formattedDate = eventDate.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  const startTime = eventDate.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  // Calculate end time (assuming 2 hours duration if not specified)
+  const endDate = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000);
+  const endTime = endDate.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const spotsLeft = event.maxParticipants
+    ? event.maxParticipants - event.attendeeCount
+    : null;
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Hero Image */}
+      <div className="relative w-full h-[400px] mt-16">
+        <Image
+          src={
+            event.imageUrl ||
+            'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop'
+          }
+          alt={event.title}
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute top-4 right-4 flex gap-2">
+          <button
+            onClick={handleSave}
+            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition"
+            aria-label={isSaved ? 'Unsave event' : 'Save event'}
+          >
+            <svg
+              className={`w-6 h-6 ${isSaved ? 'fill-[#EF5DA8] text-[#EF5DA8]' : 'text-gray-700'}`}
+              fill={isSaved ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={handleShare}
+            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition"
+            aria-label="Share event"
+          >
+            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+              />
+            </svg>
+          </button>
+        </div>
+        {copied && (
+          <div className="absolute top-20 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg">
+            Link copied!
+          </div>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+        {/* Event Header */}
+        <div>
+          <p className="text-sm text-gray-600 mb-2">
+            {dayOfWeek}, {formattedDate}
+          </p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">{event.title}</h1>
+          <div className="flex items-center gap-2 text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            <span>Hosted by {event.host.name}</span>
+          </div>
+        </div>
+
+        {/* Ticket Info - Fixed Position Card */}
+        <Card className="sticky top-20 z-10 border-2 border-[#5D5FEF] shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-600">Free</p>
+                <p className="text-xs text-gray-500">
+                  {startTime} - {endTime}
+                </p>
+              </div>
+              <Button className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF] px-8">
+                Get Ticket
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Date and Time */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              Date and time
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700">
+              Starts on {dayOfWeek}, {formattedDate} · {startTime} - {endTime}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Location */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              Location
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="font-semibold text-gray-900">{event.location.address}</p>
+              <button
+                onClick={handleGetDirections}
+                className="text-[#5D5FEF] hover:text-[#EF5DA8] text-sm font-medium mt-1 flex items-center gap-1"
+              >
+                Get directions
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </button>
+            </div>
+            {event.location.coordinates && process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
+              <div className="h-64 rounded-lg overflow-hidden border border-gray-200">
+                <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
+                  <Map
+                    defaultCenter={{
+                      lat: event.location.coordinates[1],
+                      lng: event.location.coordinates[0],
+                    }}
+                    defaultZoom={14}
+                    mapId="event-details-map"
+                    style={{ width: '100%', height: '100%' }}
+                  >
+                    <Marker
+                      position={{
+                        lat: event.location.coordinates[1],
+                        lng: event.location.coordinates[0],
+                      }}
+                    />
+                  </Map>
+                </APIProvider>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Event Description */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Description</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 whitespace-pre-line">{event.description}</p>
+            {event.host.bio && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="font-semibold text-gray-900 mb-2">About the Host</h3>
+                <p className="text-gray-700">{event.host.bio}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tickets & Registration */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tickets & Registration</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold text-gray-900">General Admission - Free</p>
+                  {spotsLeft !== null && (
+                    <p className="text-sm text-gray-600">
+                      ({event.attendeeCount}/{event.maxParticipants} spots filled)
+                    </p>
+                  )}
+                </div>
+                <span className="text-lg font-bold text-[#5D5FEF]">Free</span>
+              </div>
+              {spotsLeft !== null && spotsLeft > 0 && (
+                <p className="text-sm text-gray-600">
+                  {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                </p>
+              )}
+            </div>
+            <Button className="w-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF]">
+              Get Ticket
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Tags */}
+        {event.tags && event.tags.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Tags</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {event.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Report Link */}
+        <div className="text-center py-4">
+          <button className="text-[#5D5FEF] hover:text-[#EF5DA8] text-sm font-medium">
+            Report this event
+          </button>
+        </div>
+      </div>
+
+      {/* Related Events */}
+      {relatedEvents.length > 0 && (
+        <div className="bg-gray-50 py-12">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Other events you may like</h2>
+              <div className="flex gap-2">
+                <button
+                  className="p-2 rounded-full border border-gray-300 hover:bg-white transition"
+                  aria-label="Previous events"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  className="p-2 rounded-full border border-gray-300 hover:bg-white transition"
+                  aria-label="Next events"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {relatedEvents.map((relatedEvent) => {
+                const date = new Date(relatedEvent.datetime);
+                const month = date.toLocaleString('default', { month: 'short' });
+                const day = date.getDate().toString();
+
+                return (
+                  <EventCardHome
+                    key={relatedEvent.id || relatedEvent._id}
+                    month={month}
+                    day={day}
+                    title={relatedEvent.title}
+                    location={relatedEvent.location || 'Unknown location'}
+                    datetime={relatedEvent.datetime}
+                    host={relatedEvent.host || 'Anonymous'}
+                    status="Just Viewed"
+                    price="Free"
+                    imageUrl={
+                      relatedEvent.imageUrl ||
+                      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop'
+                    }
+                    attendees={relatedEvent.attendees || []}
+                    eventId={relatedEvent.id || relatedEvent._id}
+                    variant="home"
+                    actions={true}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

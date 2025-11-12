@@ -42,6 +42,7 @@ function MapContent({
           isPublic: true,
           lat: mapCenter.lat,
           lng: mapCenter.lng,
+          q: searchQuery.trim() || undefined, // Pass search query to API
         });
 
         if (response.success && Array.isArray(response.events)) {
@@ -72,57 +73,31 @@ function MapContent({
             })
             .filter(Boolean) as HangoutEvent[];
 
-          // Filter by search query if provided
-          let filteredEvents = eventsWithCoords;
-          let foundEvent: HangoutEvent | null = null;
+          // API already filtered by search query, so just use the results
+          const filteredEvents = eventsWithCoords;
 
+          // Update search status based on results
           if (searchQuery.trim()) {
-            const lowerQuery = searchQuery.toLowerCase();
+            if (filteredEvents.length > 0) {
+              // Check if we have an exact or close match
+              const lowerQuery = searchQuery.toLowerCase();
+              const foundEvent = filteredEvents.find(
+                (event) => event.title.toLowerCase() === lowerQuery
+              ) || filteredEvents.find(
+                (event) => event.title.toLowerCase().includes(lowerQuery)
+              );
 
-            // First, try to find an exact or close match for event title
-            foundEvent = eventsWithCoords.find(
-              (event) => event.title.toLowerCase() === lowerQuery
-            ) || eventsWithCoords.find(
-              (event) => event.title.toLowerCase().includes(lowerQuery)
-            ) || null;
-
-            // Filter events that match the search term in title, location, or host
-            // This is more lenient - shows all events in the area PLUS any that match the query text
-            filteredEvents = eventsWithCoords.filter(
-              (event) => {
-                // Check if title contains the search query
-                if (event.title.toLowerCase().includes(lowerQuery)) {
-                  return true;
+              if (foundEvent) {
+                onSearchStatus({ found: true, type: "event" });
+                // If we found a specific event, zoom to it and select it
+                if (map && foundEvent.coordinates) {
+                  map.setCenter(foundEvent.coordinates);
+                  map.setZoom(16);
+                  setSelectedEvent(foundEvent);
                 }
-
-                // Check if location address contains the search query
-                const locationMatch = typeof event.location === "string"
-                  ? event.location.toLowerCase().includes(lowerQuery)
-                  : event.location?.address?.toLowerCase().includes(lowerQuery);
-
-                if (locationMatch) {
-                  return true;
-                }
-
-                // Check if host name contains the search query
-                if (typeof event.host === "object" && event.host?.name) {
-                  if (event.host.name.toLowerCase().includes(lowerQuery)) {
-                    return true;
-                  }
-                }
-
-                // If the search query doesn't match title/location/host,
-                // but we have coordinates from a city search, include all events
-                // This handles the case: user searches "Pomona" → show all Pomona events
-                return true;
+              } else {
+                onSearchStatus({ found: true, type: "city" });
               }
-            );
-
-            // Update search status
-            if (foundEvent) {
-              onSearchStatus({ found: true, type: "event" });
-            } else if (filteredEvents.length > 0) {
-              onSearchStatus({ found: true, type: "city" });
             } else {
               onSearchStatus({ found: false, type: "none" });
             }
@@ -133,20 +108,22 @@ function MapContent({
           setAllEvents(filteredEvents);
 
           // Focus map based on search results
-          if (map && filteredEvents.length > 0) {
-            if (foundEvent && foundEvent.coordinates) {
-              // If we found a specific event, zoom directly to it
-              map.setCenter(foundEvent.coordinates);
-              map.setZoom(16);
-
-              // Auto-select the event to show info window
-              setSelectedEvent(foundEvent);
-            } else {
-              // Otherwise, fit bounds to show all matching events
-              const bounds = new google.maps.LatLngBounds();
-              filteredEvents.forEach(
-                (e) => e.coordinates && bounds.extend(e.coordinates)
-              );
+          if (map && filteredEvents.length > 0 && !searchQuery.trim()) {
+            // No specific search query, fit bounds to show all events
+            const bounds = new google.maps.LatLngBounds();
+            filteredEvents.forEach(
+              (e) => e.coordinates && bounds.extend(e.coordinates)
+            );
+            bounds.extend(mapCenter);
+            map.fitBounds(bounds, 64);
+          } else if (map && filteredEvents.length > 0 && searchQuery.trim()) {
+            // Has search query but no exact match found above
+            // Fit bounds to show all matching events
+            const bounds = new google.maps.LatLngBounds();
+            filteredEvents.forEach(
+              (e) => e.coordinates && bounds.extend(e.coordinates)
+            );
+            if (filteredEvents.length > 0) {
               bounds.extend(mapCenter);
               map.fitBounds(bounds, 64);
             }

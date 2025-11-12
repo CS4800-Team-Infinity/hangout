@@ -26,6 +26,7 @@ export default async function handler(
       isPublic,
       city,
       category,
+      q, // Search query for event title
     } = req.query;
 
     // Safely parse floats only if values exist
@@ -33,21 +34,32 @@ export default async function handler(
     const userLng = lng ? parseFloat(lng as string) : NaN;
 
     console.log("📍 Searching near:", userLat, userLng);
+    console.log("🔍 Search query:", q);
     console.log("Type check:", typeof userLat, typeof userLng);
 
     let hangouts: HydratedDocument<any>[] = [];
 
     const baseFilter: any = { status };
+
+    // Filter out past events - only show events from today onwards
+    baseFilter.date = { $gte: new Date() };
+
     if (isPublic !== undefined) {
       baseFilter.isPublic = isPublic === "true";
     }
 
-    // City & category filters
+    // City filter
     if (city)
       baseFilter["location.address"] = {
         $regex: new RegExp(escapeRegex(city as string), "i"),
       };
     if (category) baseFilter.category = category;
+
+    // Determine search radius based on whether we have a specific event search
+    const hasEventSearch = q && typeof q === 'string' && q.trim();
+    const searchRadius = hasEventSearch ? 500000 : 100000; // 500km for event search, 100km otherwise
+
+    console.log("🔍 Search params:", { q, hasEventSearch, searchRadius, baseFilter });
 
     // Only run geo query if lat/lng are valid numbers
     if (!isNaN(userLat) && !isNaN(userLng)) {
@@ -57,7 +69,7 @@ export default async function handler(
           location: {
             $nearSphere: {
               $geometry: { type: "Point", coordinates: [userLng, userLat] },
-              $maxDistance: 100000, // 100 km
+              $maxDistance: searchRadius,
             },
           },
         })
@@ -66,7 +78,15 @@ export default async function handler(
           .limit(0) // no limit for now
           .lean();
 
-        console.log("✅ Found", hangouts.length, "events near user");
+        console.log("✅ Found", hangouts.length, "events near user before title filter");
+
+        // Filter by title after geo query if search query provided
+        if (hasEventSearch) {
+          const searchRegex = new RegExp(escapeRegex(q.trim()), "i");
+          hangouts = hangouts.filter(h => searchRegex.test(h.title));
+          console.log("✅ After title filter:", hangouts.length, "events matching:", q);
+        }
+
         console.log(
           "Fetched coordinates:",
           hangouts.map((h) => h.location.coordinates)
@@ -87,7 +107,7 @@ export default async function handler(
           location: {
             $nearSphere: {
               $geometry: { type: "Point", coordinates: pomonaCoords },
-              $maxDistance: 1000000,
+              $maxDistance: 1000000, // 1000km fallback
             },
           },
         })
@@ -96,7 +116,14 @@ export default async function handler(
           .limit(0) // no limit for now
           .lean();
 
-        console.log(`🧭 Fallback: Found ${hangouts.length} Pomona events`);
+        console.log(`🧭 Fallback: Found ${hangouts.length} Pomona events before title filter`);
+
+        // Filter by title after geo query if search query provided
+        if (hasEventSearch) {
+          const searchRegex = new RegExp(escapeRegex(q.trim()), "i");
+          hangouts = hangouts.filter(h => searchRegex.test(h.title));
+          console.log("🧭 Fallback after title filter:", hangouts.length, "events matching:", q);
+        }
       } catch (err: any) {
         console.warn("⚠️ Geo query for Pomona fallback failed:", err.message);
       }
