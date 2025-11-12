@@ -396,7 +396,7 @@ export default function CreateEventPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="ml-64 flex-1 p-8">
+        <div className="ml-64 flex-1 p-8 pt-24">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Event Image */}
             <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-200">
