@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     // Temporary setup for development:
     // Allow loading images directly from any HTTPS URL (e.g., user-pasted links).
