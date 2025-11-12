@@ -32,6 +32,9 @@ jobs:
             echo "Installing dependencies..."
             npm ci --force
 
+            echo "Removing old build..."
+            rm -rf .next
+
             echo "Building the app..."
             npm run build
 
