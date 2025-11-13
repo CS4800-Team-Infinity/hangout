@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
-import EventCardHome from '@/components/EventCard/EventCardHome';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Image from "next/image";
+import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
+import EventCardHome from "@/components/EventCard/EventCardHome";
+import ShareMenu from "@/components/common/ShareMenu";
 
 interface EventDetails {
   _id: string;
@@ -58,6 +59,7 @@ export default function EventDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -68,12 +70,12 @@ export default function EventDetailsPage() {
         setError(null);
 
         // Fetch event details
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const headers: HeadersInit = {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         };
         if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+          headers["Authorization"] = `Bearer ${token}`;
         }
 
         const response = await fetch(`/api/events/${id}`, { headers });
@@ -81,11 +83,11 @@ export default function EventDetailsPage() {
 
         if (!response.ok || !data.success) {
           if (response.status === 404) {
-            setError('Event not found');
+            setError("Event not found");
           } else if (response.status === 401 || response.status === 403) {
-            setError('You do not have access to this event');
+            setError("You do not have access to this event");
           } else {
-            setError(data.error || 'Failed to load event');
+            setError(data.error || "Failed to load event");
           }
           return;
         }
@@ -95,8 +97,8 @@ export default function EventDetailsPage() {
         // Fetch related events based on location and tags
         await fetchRelatedEvents(data.event);
       } catch (err) {
-        console.error('Error fetching event:', err);
-        setError('Failed to load event details');
+        console.error("Error fetching event:", err);
+        setError("Failed to load event details");
       } finally {
         setLoading(false);
       }
@@ -108,12 +110,14 @@ export default function EventDetailsPage() {
   const fetchRelatedEvents = async (currentEvent: EventDetails) => {
     try {
       // Extract city from address
-      const addressParts = currentEvent.location.address.split(',');
-      const city = addressParts[addressParts.length - 2]?.trim() || 'Pomona';
+      const addressParts = currentEvent.location.address.split(",");
+      const city = addressParts[addressParts.length - 2]?.trim() || "Pomona";
 
       // Fetch events from the same city
       const response = await fetch(
-        `/api/hangouts/list?city=${encodeURIComponent(city)}&status=upcoming&isPublic=true`
+        `/api/hangouts/list?city=${encodeURIComponent(
+          city
+        )}&status=upcoming&isPublic=true`
       );
       const data = await response.json();
 
@@ -122,26 +126,21 @@ export default function EventDetailsPage() {
         const filtered = data.events
           .filter((e: RelatedEvent) => {
             const eventId = e.id || e._id;
-            return eventId !== currentEvent._id && eventId !== currentEvent.uuid;
+            return (
+              eventId !== currentEvent._id && eventId !== currentEvent.uuid
+            );
           })
           .slice(0, 4);
         setRelatedEvents(filtered);
       }
     } catch (err) {
-      console.error('Error fetching related events:', err);
+      console.error("Error fetching related events:", err);
       setRelatedEvents([]);
     }
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+  const handleShare = () => {
+    setShowShareMenu(!showShareMenu);
   };
 
   const handleSave = () => {
@@ -152,7 +151,7 @@ export default function EventDetailsPage() {
     if (event?.location.coordinates) {
       const [lng, lat] = event.location.coordinates;
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-      window.open(mapsUrl, '_blank');
+      window.open(mapsUrl, "_blank");
     }
   };
 
@@ -172,9 +171,11 @@ export default function EventDetailsPage() {
       <div className="min-h-screen flex items-center justify-center mt-16">
         <div className="text-center max-w-md mx-auto px-4">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            {error === 'Event not found' ? '404' : 'Oops!'}
+            {error === "Event not found" ? "404" : "Oops!"}
           </h1>
-          <p className="text-gray-600 mb-6">{error || 'Something went wrong'}</p>
+          <p className="text-gray-600 mb-6">
+            {error || "Something went wrong"}
+          </p>
           <Link href="/events">
             <Button className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF]">
               Back to Events
@@ -186,23 +187,23 @@ export default function EventDetailsPage() {
   }
 
   const eventDate = new Date(event.date);
-  const dayOfWeek = eventDate.toLocaleDateString('en-US', { weekday: 'long' });
-  const formattedDate = eventDate.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  const dayOfWeek = eventDate.toLocaleDateString("en-US", { weekday: "long" });
+  const formattedDate = eventDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
-  const startTime = eventDate.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
+  const startTime = eventDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
     hour12: true,
   });
 
   // Calculate end time (assuming 2 hours duration if not specified)
   const endDate = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000);
-  const endTime = endDate.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
+  const endTime = endDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
     hour12: true,
   });
 
@@ -213,26 +214,128 @@ export default function EventDetailsPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Image */}
-      <div className="relative w-full h-[400px] mt-16">
-        <Image
-          src={
-            event.imageUrl ||
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop'
-          }
-          alt={event.title}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute top-4 right-4 flex gap-2">
-          <button
-            onClick={handleSave}
-            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition"
-            aria-label={isSaved ? 'Unsave event' : 'Save event'}
-          >
+      <div className="max-w-6xl mx-auto px-6 pt-24">
+        <div className="relative w-full h-[280px] rounded-2xl overflow-hidden mb-6">
+          <Image
+            src={
+              event.imageUrl ||
+              "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop"
+            }
+            alt={event.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-6 pb-8 space-y-6">
+        {/* Event Header */}
+        <div className="mb-6">
+          <p className="text-sm text-gray-600 mb-3">
+            {dayOfWeek}, {formattedDate}
+          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {event.title}
+          </h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-gray-700">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              <span className="text-sm">
+                Hosted by <strong>{event.host.name}</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSave}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+                aria-label={isSaved ? "Unsave event" : "Save event"}
+              >
+                <svg
+                  className={`w-5 h-5 ${
+                    isSaved ? "fill-[#EF5DA8] text-[#EF5DA8]" : "text-gray-700"
+                  }`}
+                  fill={isSaved ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              </button>
+              <div className="relative">
+                <button
+                  onClick={handleShare}
+                  className="p-2 hover:bg-gray-100 rounded-full transition"
+                  aria-label="Share event"
+                >
+                  <svg
+                    className="w-5 h-5 text-gray-700"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                </button>
+                {showShareMenu && (
+                  <ShareMenu
+                    eventId={event._id}
+                    title={event.title}
+                    onClose={() => setShowShareMenu(false)}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+          {copied && (
+            <div className="fixed top-24 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50">
+              Link copied!
+            </div>
+          )}
+        </div>
+
+        {/* Ticket Info */}
+        <div className="flex items-center justify-between py-4 border-y border-gray-200">
+          <div>
+            <p className="text-lg font-semibold text-gray-900">Free</p>
+            <p className="text-sm text-gray-600">
+              {startTime} - {endTime} PDT
+            </p>
+          </div>
+          <Button className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF] px-8 py-6 text-base">
+            Get Ticket
+          </Button>
+        </div>
+
+        {/* Date and Time */}
+        <div className="space-y-2 py-4">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <svg
-              className={`w-6 h-6 ${isSaved ? 'fill-[#EF5DA8] text-[#EF5DA8]' : 'text-gray-700'}`}
-              fill={isSaved ? 'currentColor' : 'none'}
+              className="w-5 h-5"
+              fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
@@ -240,122 +343,57 @@ export default function EventDetailsPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-          </button>
-          <button
-            onClick={handleShare}
-            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition"
-            aria-label="Share event"
-          >
-            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-              />
-            </svg>
-          </button>
-        </div>
-        {copied && (
-          <div className="absolute top-20 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg">
-            Link copied!
-          </div>
-        )}
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-        {/* Event Header */}
-        <div>
-          <p className="text-sm text-gray-600 mb-2">
-            {dayOfWeek}, {formattedDate}
+            Date and time
+          </h2>
+          <p className="text-gray-700 pl-7">
+            Starts on {dayOfWeek}, {formattedDate} · {startTime} - {endTime} PDT
           </p>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">{event.title}</h1>
-          <div className="flex items-center gap-2 text-gray-600">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            <span>Hosted by {event.host.name}</span>
-          </div>
         </div>
-
-        {/* Ticket Info - Fixed Position Card */}
-        <Card className="sticky top-20 z-10 border-2 border-[#5D5FEF] shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-600">Free</p>
-                <p className="text-xs text-gray-500">
-                  {startTime} - {endTime}
-                </p>
-              </div>
-              <Button className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF] px-8">
-                Get Ticket
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Date and Time */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              Date and time
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700">
-              Starts on {dayOfWeek}, {formattedDate} · {startTime} - {endTime}
-            </p>
-          </CardContent>
-        </Card>
 
         {/* Location */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              Location
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="space-y-3 py-4">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            Location
+          </h2>
+          <div className="pl-7 space-y-3">
             <div>
-              <p className="font-semibold text-gray-900">{event.location.address}</p>
+              <p className="font-medium text-gray-900">
+                {event.location.address.split(",")[0]}
+              </p>
+              <p className="text-sm text-gray-600">{event.location.address}</p>
               <button
                 onClick={handleGetDirections}
                 className="text-[#5D5FEF] hover:text-[#EF5DA8] text-sm font-medium mt-1 flex items-center gap-1"
               >
                 Get directions
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -365,96 +403,100 @@ export default function EventDetailsPage() {
                 </svg>
               </button>
             </div>
-            {event.location.coordinates && process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
-              <div className="h-64 rounded-lg overflow-hidden border border-gray-200">
-                <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
-                  <Map
-                    defaultCenter={{
-                      lat: event.location.coordinates[1],
-                      lng: event.location.coordinates[0],
-                    }}
-                    defaultZoom={14}
-                    mapId="event-details-map"
-                    style={{ width: '100%', height: '100%' }}
+            {event.location.coordinates &&
+              process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
+                <div className="h-64 rounded-lg overflow-hidden border border-gray-200">
+                  <APIProvider
+                    apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
                   >
-                    <Marker
-                      position={{
+                    <Map
+                      defaultCenter={{
                         lat: event.location.coordinates[1],
                         lng: event.location.coordinates[0],
                       }}
-                    />
-                  </Map>
-                </APIProvider>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      defaultZoom={14}
+                      mapId="event-details-map"
+                      style={{ width: "100%", height: "100%" }}
+                    >
+                      <Marker
+                        position={{
+                          lat: event.location.coordinates[1],
+                          lng: event.location.coordinates[0],
+                        }}
+                      />
+                    </Map>
+                  </APIProvider>
+                </div>
+              )}
+          </div>
+        </div>
 
         {/* Event Description */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Event Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 whitespace-pre-line">{event.description}</p>
+        <div className="space-y-3 py-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Event Description
+          </h2>
+          <div className="text-gray-700 space-y-4">
+            <p className="whitespace-pre-line">{event.description}</p>
             {event.host.bio && (
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-2">About the Host</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  About the Host
+                </h3>
                 <p className="text-gray-700">{event.host.bio}</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Tickets & Registration */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tickets & Registration</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-              <div className="flex justify-between items-center">
+        <div className="space-y-4 py-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Tickets & Registration
+          </h2>
+          <div className="space-y-4">
+            <div className="bg-[#f1ecfc] rounded-lg border border-gray-200 p-6">
+              <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-semibold text-gray-900">General Admission - Free</p>
+                  <p className="font-semibold text-gray-900">
+                    General Admission - Free
+                  </p>
                   {spotsLeft !== null && (
-                    <p className="text-sm text-gray-600">
-                      ({event.attendeeCount}/{event.maxParticipants} spots filled)
+                    <p className="text-sm text-gray-600 mt-1">
+                      ({event.attendeeCount}/{event.maxParticipants} spots
+                      filled)
                     </p>
                   )}
                 </div>
-                <span className="text-lg font-bold text-[#5D5FEF]">Free</span>
+                <span className="text-lg font-bold text-gray-900">Free</span>
               </div>
               {spotsLeft !== null && spotsLeft > 0 && (
                 <p className="text-sm text-gray-600">
-                  {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                  {spotsLeft} {spotsLeft === 1 ? "spot" : "spots"} left
                 </p>
               )}
             </div>
-            <Button className="w-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF]">
+            <Button className="w-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF] py-6 text-base">
               Get Ticket
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Tags */}
         {event.tags && event.tags.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Tags</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {event.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-3 py-4">
+            <h2 className="text-lg font-semibold text-gray-900">Tags</h2>
+            <div className="flex flex-wrap gap-2">
+              {event.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Report Link */}
@@ -468,24 +510,46 @@ export default function EventDetailsPage() {
       {/* Related Events */}
       {relatedEvents.length > 0 && (
         <div className="bg-gray-50 py-12">
-          <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Other events you may like</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Other events you may like
+              </h2>
               <div className="flex gap-2">
                 <button
                   className="p-2 rounded-full border border-gray-300 hover:bg-white transition"
                   aria-label="Previous events"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                 </button>
                 <button
                   className="p-2 rounded-full border border-gray-300 hover:bg-white transition"
                   aria-label="Next events"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </button>
               </div>
@@ -493,7 +557,9 @@ export default function EventDetailsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {relatedEvents.map((relatedEvent) => {
                 const date = new Date(relatedEvent.datetime);
-                const month = date.toLocaleString('default', { month: 'short' });
+                const month = date.toLocaleString("default", {
+                  month: "short",
+                });
                 const day = date.getDate().toString();
 
                 return (
@@ -502,14 +568,14 @@ export default function EventDetailsPage() {
                     month={month}
                     day={day}
                     title={relatedEvent.title}
-                    location={relatedEvent.location || 'Unknown location'}
+                    location={relatedEvent.location || "Unknown location"}
                     datetime={relatedEvent.datetime}
-                    host={relatedEvent.host || 'Anonymous'}
+                    host={relatedEvent.host || "Anonymous"}
                     status="Just Viewed"
                     price="Free"
                     imageUrl={
                       relatedEvent.imageUrl ||
-                      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop'
+                      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop"
                     }
                     attendees={relatedEvent.attendees || []}
                     eventId={relatedEvent.id || relatedEvent._id}

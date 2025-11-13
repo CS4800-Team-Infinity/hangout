@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Facebook, Linkedin, Link, X, Mail } from "lucide-react";
 import Image from "next/image";
 
@@ -10,6 +10,7 @@ type ShareMenuProps = {
 
 export default function ShareMenu({ eventId, title, onClose }: ShareMenuProps) {
   const [eventUrl, setEventUrl] = useState("");
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -20,6 +21,18 @@ export default function ShareMenu({ eventId, title, onClose }: ShareMenuProps) {
       );
     }
   }, [eventId]);
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [onClose]);
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.preventDefault();
