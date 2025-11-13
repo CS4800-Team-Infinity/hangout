@@ -273,7 +273,9 @@ export default function About() {
                         .map((n) => n[0])
                         .join("")}
                     </div>
-                    <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                    <h3 className="text-xl  text-zinc-600 font-bold mb-2">
+                      {member.name}
+                    </h3>
                     <p className="text-sm text-zinc-600 mb-3">{member.role}</p>
                     <a
                       href={member.github}
