@@ -120,6 +120,16 @@ export default function Footer() {
                   Community Guidelines
                 </a>
               </li>
+              <li>
+                <a href="/privacy-policy" className="link-gradient">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="/terms-of-use" className="link-gradient">
+                  Terms of Use
+                </a>
+              </li>
             </ul>
           </div>
 
