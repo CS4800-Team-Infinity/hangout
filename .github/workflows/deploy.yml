@@ -25,27 +25,30 @@ jobs:
           REMOTE_USER: ec2-user
           TARGET: "/home/ec2-user/hangout"
           SCRIPT_AFTER: |
+            echo "Loading NVM..."
+            source ~/.nvm/nvm.sh
+            nvm use 20
+
             cd /home/ec2-user/hangout
+
+            echo "Fetching latest code..."
             git fetch origin main
             git reset --hard origin/main
 
             echo "Installing dependencies..."
-            npm ci --force
+            npm install --force
 
             echo "Removing old build..."
             rm -rf .next
 
-            echo "Building the app..."
-            npm run build || { echo "Build failed, stopping deployment"; exit 1; }
-
-            echo "Clearing PM2 logs..."
-            pm2 flush
-
-            echo "Cleaning temp files..."
-            sudo find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -print -exec rm -rf {} +
+            echo "Building application..."
+            npm run build || { echo 'Build failed.'; exit 1; }
 
             echo "Restarting PM2..."
             pm2 restart hangout --update-env || pm2 start npm --name "hangout" -- start
+
+            echo "Cleaning temp files..."
+            sudo find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -print -exec rm -rf {} +
 
             echo ""
             echo "===== System Resource Report ====="
@@ -57,4 +60,4 @@ jobs:
             echo "====================================="
             echo ""
 
-            echo "Deployment completed successfully on $(date)"
+            echo "Deployment completed at $(date)"
