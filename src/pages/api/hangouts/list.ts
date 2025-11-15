@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { HydratedDocument } from "mongoose";
 import connect from "@/lib/connect";
 import Hangout from "@/models/Hangout";
 import RSVP from "@/models/RSVP";
+import { HydratedDocument } from "mongoose";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -44,8 +44,12 @@ export default async function handler(
     // Filter out past events - only show events from today onwards
     baseFilter.date = { $gte: new Date() };
 
+    // Default to showing only public events unless explicitly requesting all
     if (isPublic !== undefined) {
       baseFilter.isPublic = isPublic === "true";
+    } else {
+      // Default behavior: only show public events
+      baseFilter.isPublic = true;
     }
 
     // City filter
@@ -56,10 +60,15 @@ export default async function handler(
     if (category) baseFilter.category = category;
 
     // Determine search radius based on whether we have a specific event search
-    const hasEventSearch = q && typeof q === 'string' && q.trim();
+    const hasEventSearch = q && typeof q === "string" && q.trim();
     const searchRadius = hasEventSearch ? 500000 : 100000; // 500km for event search, 100km otherwise
 
-    console.log("🔍 Search params:", { q, hasEventSearch, searchRadius, baseFilter });
+    console.log("🔍 Search params:", {
+      q,
+      hasEventSearch,
+      searchRadius,
+      baseFilter,
+    });
 
     // Only run geo query if lat/lng are valid numbers
     if (!isNaN(userLat) && !isNaN(userLng)) {
@@ -78,13 +87,22 @@ export default async function handler(
           .limit(0) // no limit for now
           .lean();
 
-        console.log("✅ Found", hangouts.length, "events near user before title filter");
+        console.log(
+          "✅ Found",
+          hangouts.length,
+          "events near user before title filter"
+        );
 
         // Filter by title after geo query if search query provided
         if (hasEventSearch) {
           const searchRegex = new RegExp(escapeRegex(q.trim()), "i");
-          hangouts = hangouts.filter(h => searchRegex.test(h.title));
-          console.log("✅ After title filter:", hangouts.length, "events matching:", q);
+          hangouts = hangouts.filter((h) => searchRegex.test(h.title));
+          console.log(
+            "✅ After title filter:",
+            hangouts.length,
+            "events matching:",
+            q
+          );
         }
 
         console.log(
@@ -116,13 +134,20 @@ export default async function handler(
           .limit(0) // no limit for now
           .lean();
 
-        console.log(`🧭 Fallback: Found ${hangouts.length} Pomona events before title filter`);
+        console.log(
+          `🧭 Fallback: Found ${hangouts.length} Pomona events before title filter`
+        );
 
         // Filter by title after geo query if search query provided
         if (hasEventSearch) {
           const searchRegex = new RegExp(escapeRegex(q.trim()), "i");
-          hangouts = hangouts.filter(h => searchRegex.test(h.title));
-          console.log("🧭 Fallback after title filter:", hangouts.length, "events matching:", q);
+          hangouts = hangouts.filter((h) => searchRegex.test(h.title));
+          console.log(
+            "🧭 Fallback after title filter:",
+            hangouts.length,
+            "events matching:",
+            q
+          );
         }
       } catch (err: any) {
         console.warn("⚠️ Geo query for Pomona fallback failed:", err.message);

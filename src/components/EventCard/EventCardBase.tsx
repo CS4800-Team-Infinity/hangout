@@ -89,7 +89,9 @@ export default function EventCardBase({
   const hostName =
     typeof host === "string" ? host : host?.name ?? "Unknown Host";
 
-  const isOnline = location?.toLowerCase().includes("online");
+  const locationString =
+    (location as any)?.address ?? (location as string) ?? "";
+  const isOnline = locationString.toLowerCase().includes("online");
   const locationBadge = isOnline ? "Online" : "Offline";
 
   const handleJoin = () => {

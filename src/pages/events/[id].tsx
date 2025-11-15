@@ -2,51 +2,21 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 import EventCardHome from "@/components/EventCard/EventCardHome";
 import ShareMenu from "@/components/common/ShareMenu";
+import RSVPDialog from "@/components/events/RSVPDialog";
+import CheckoutDialog from "@/components/events/CheckoutDialog";
+import RelatedEvents from "@/components/RelatedEvents";
 
-interface EventDetails {
-  _id: string;
-  uuid?: string;
-  title: string;
-  description: string;
-  date: string;
-  location: {
-    address: string;
-    coordinates: [number, number];
-  };
-  host: {
-    _id: string;
-    name: string;
-    username: string;
-    email: string;
-    bio?: string;
-  };
-  imageUrl?: string;
-  maxParticipants?: number;
-  isPublic: boolean;
-  status: string;
-  attendeeCount: number;
-  attendees: Array<{
-    _id: string;
-    name: string;
-    username: string;
-  }>;
-  tags?: string[];
-}
+import type { EventDetails } from "@/types/EventDetails";
 
-interface RelatedEvent {
-  id?: string;
-  _id?: string;
-  title: string;
-  datetime: string;
-  location?: string;
-  host?: string;
-  imageUrl?: string;
-  attendees?: any[];
+interface User {
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
 }
 
 export default function EventDetailsPage() {
@@ -54,12 +24,48 @@ export default function EventDetailsPage() {
   const { id } = router.query;
 
   const [event, setEvent] = useState<EventDetails | null>(null);
-  const [relatedEvents, setRelatedEvents] = useState<RelatedEvent[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [relatedEvents, setRelatedEvents] = useState([]);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [checkoutQuantity, setCheckoutQuantity] = useState(1);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+  const [fullName, setFullName] = useState("");
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch("/api/user/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) return;
+
+        const { user: apiUser } = await response.json();
+        if (!apiUser) return;
+
+        setUser({
+          name: apiUser.name || "",
+          email: apiUser.email || "",
+        });
+
+        console.log("Fetched user:", apiUser);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -93,9 +99,7 @@ export default function EventDetailsPage() {
         }
 
         setEvent(data.event);
-
-        // Fetch related events based on location and tags
-        await fetchRelatedEvents(data.event);
+        setRelatedEvents(data.relatedEvents || []);
       } catch (err) {
         console.error("Error fetching event:", err);
         setError("Failed to load event details");
@@ -107,37 +111,81 @@ export default function EventDetailsPage() {
     fetchEventDetails();
   }, [id]);
 
-  const fetchRelatedEvents = async (currentEvent: EventDetails) => {
-    try {
-      // Extract city from address
-      const addressParts = currentEvent.location.address.split(",");
-      const city = addressParts[addressParts.length - 2]?.trim() || "Pomona";
+  useEffect(() => {
+    async function checkRsvp() {
+      if (!event?._id || !user?.email) return;
 
-      // Fetch events from the same city
-      const response = await fetch(
-        `/api/hangouts/list?city=${encodeURIComponent(
-          city
-        )}&status=upcoming&isPublic=true`
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`/api/events/${event._id}/rsvp`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+
+      const attendees = data?.attendees || [];
+
+      const already = attendees.some(
+        (a: any) =>
+          (a.email ?? "").toLowerCase() === (user?.email ?? "").toLowerCase()
       );
-      const data = await response.json();
 
-      if (data.events && Array.isArray(data.events)) {
-        // Filter out the current event and limit to 4
-        const filtered = data.events
-          .filter((e: RelatedEvent) => {
-            const eventId = e.id || e._id;
-            return (
-              eventId !== currentEvent._id && eventId !== currentEvent.uuid
-            );
-          })
-          .slice(0, 4);
-        setRelatedEvents(filtered);
+      if (already) {
+        router.push(`/events/${event._id}/registered`);
       }
-    } catch (err) {
-      console.error("Error fetching related events:", err);
-      setRelatedEvents([]);
     }
-  };
+
+    checkRsvp();
+  }, [user, event?._id]);
+
+  useEffect(() => {
+    async function check() {
+      if (!event?._id || !user?.email) return;
+
+      const res = await fetch(`/api/events/${event._id}/attendees`);
+      const data = await res.json();
+
+      const attendees = data?.attendees || [];
+
+      const match = attendees.find(
+        (a: any) =>
+          (a.email ?? "").toLowerCase() === (user.email ?? "").toLowerCase()
+      );
+
+      if (match) {
+        setAlreadyRegistered(true);
+        setFullName(match.name ?? "");
+      } else {
+        setAlreadyRegistered(false);
+      }
+    }
+
+    check();
+  }, [user?.email, event?._id]);
+
+  // Check for checkout parameter from login redirect
+  useEffect(() => {
+    if (router.isReady && event) {
+      const checkoutParam = router.query.checkout;
+      const quantityParam = router.query.quantity;
+
+      // Support both "1" and "true" for backward compatibility
+      if (checkoutParam === "true" || checkoutParam === "1") {
+        setIsCheckoutOpen(true);
+        if (quantityParam) {
+          setCheckoutQuantity(parseInt(quantityParam as string));
+        }
+
+        // Clean up URL parameters
+        const url = new URL(window.location.href);
+        url.searchParams.delete("checkout");
+        url.searchParams.delete("quantity");
+        url.searchParams.delete("fromAuth");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, [router.isReady, router.query.checkout, router.query.quantity, event]);
 
   const handleShare = () => {
     setShowShareMenu(!showShareMenu);
@@ -186,6 +234,8 @@ export default function EventDetailsPage() {
     );
   }
 
+  const price = Number(event?.price ?? 0);
+
   const eventDate = new Date(event.date);
   const dayOfWeek = eventDate.toLocaleDateString("en-US", { weekday: "long" });
   const formattedDate = eventDate.toLocaleDateString("en-US", {
@@ -217,10 +267,7 @@ export default function EventDetailsPage() {
       <div className="max-w-6xl mx-auto px-6 pt-24">
         <div className="relative w-full h-[280px] rounded-2xl overflow-hidden mb-6">
           <Image
-            src={
-              event.imageUrl ||
-              "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop"
-            }
+            src={event.imageUrl || "/images/placeholder.png"}
             alt={event.title}
             fill
             className="object-cover"
@@ -310,24 +357,20 @@ export default function EventDetailsPage() {
               </div>
             </div>
           </div>
-          {copied && (
-            <div className="fixed top-24 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50">
-              Link copied!
-            </div>
-          )}
         </div>
 
         {/* Ticket Info */}
         <div className="flex items-center justify-between py-4 border-y border-gray-200">
           <div>
-            <p className="text-lg font-semibold text-gray-900">Free</p>
+            <span className="text-lg font-semibold text-black">
+              {price === 0 ? "Free" : `$${price.toFixed(2)}`}
+            </span>
             <p className="text-sm text-gray-600">
               {startTime} - {endTime} PDT
             </p>
           </div>
-          <Button className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF] px-8 py-6 text-base">
-            Get Ticket
-          </Button>
+          {/* RSVP Dialog */}
+          <RSVPDialog event={event} user={user} />
         </div>
 
         {/* Date and Time */}
@@ -459,7 +502,7 @@ export default function EventDetailsPage() {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="font-semibold text-gray-900">
-                    General Admission - Free
+                    General Admission
                   </p>
                   {spotsLeft !== null && (
                     <p className="text-sm text-gray-600 mt-1">
@@ -468,7 +511,9 @@ export default function EventDetailsPage() {
                     </p>
                   )}
                 </div>
-                <span className="text-lg font-bold text-gray-900">Free</span>
+                <span className="text-lg font-bold text-gray-900">
+                  {price === 0 ? "Free" : `$${price.toFixed(2)}`}
+                </span>
               </div>
               {spotsLeft !== null && spotsLeft > 0 && (
                 <p className="text-sm text-gray-600">
@@ -476,9 +521,8 @@ export default function EventDetailsPage() {
                 </p>
               )}
             </div>
-            <Button className="w-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF] py-6 text-base">
-              Get Ticket
-            </Button>
+            {/* RSVP Dialog */}
+            <RSVPDialog event={event} user={user} />
           </div>
         </div>
 
@@ -500,94 +544,29 @@ export default function EventDetailsPage() {
         )}
 
         {/* Report Link */}
-        <div className="text-center py-4">
+        <div className="py-4">
           <button className="text-[#5D5FEF] hover:text-[#EF5DA8] text-sm font-medium">
             Report this event
           </button>
         </div>
       </div>
 
-      {/* Related Events */}
-      {relatedEvents.length > 0 && (
-        <div className="bg-gray-50 py-12">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Other events you may like
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  className="p-2 rounded-full border border-gray-300 hover:bg-white transition"
-                  aria-label="Previous events"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-                <button
-                  className="p-2 rounded-full border border-gray-300 hover:bg-white transition"
-                  aria-label="Next events"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedEvents.map((relatedEvent) => {
-                const date = new Date(relatedEvent.datetime);
-                const month = date.toLocaleString("default", {
-                  month: "short",
-                });
-                const day = date.getDate().toString();
+      {/* Checkout Dialog*/}
+      <CheckoutDialog
+        event={event}
+        user={user}
+        quantity={checkoutQuantity}
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        onCloseParent={() => setIsJoinModalOpen(false)}
+        alreadyRegistered={alreadyRegistered}
+        registeredNameProp={fullName}
+      />
 
-                return (
-                  <EventCardHome
-                    key={relatedEvent.id || relatedEvent._id}
-                    month={month}
-                    day={day}
-                    title={relatedEvent.title}
-                    location={relatedEvent.location || "Unknown location"}
-                    datetime={relatedEvent.datetime}
-                    host={relatedEvent.host || "Anonymous"}
-                    status="Just Viewed"
-                    price="Free"
-                    imageUrl={
-                      relatedEvent.imageUrl ||
-                      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop"
-                    }
-                    attendees={relatedEvent.attendees || []}
-                    eventId={relatedEvent.id || relatedEvent._id}
-                    variant="home"
-                    actions={true}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Related Events */}
+      <div className="max-w-6xl mx-auto px-6 pb-12">
+        <RelatedEvents events={relatedEvents} />
+      </div>
     </div>
   );
 }

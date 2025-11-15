@@ -32,7 +32,7 @@ export interface AuthResponse {
 
 const API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://gethangout.app/"
+    ? "https://gethangout.app"
     : typeof window !== "undefined"
     ? window.location.origin
     : "http://localhost:3000";
@@ -63,6 +63,13 @@ const apiCall = async <T>(
 
   try {
     const res = await fetch(url, config);
+
+    // Check if response has content
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(`Expected JSON, but got ${contentType}`);
+    }
+
     const data = await res.json();
 
     // For auth endpoints, return the response data even if not ok

@@ -1,6 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import User from "./User";
 
 export interface Hangout extends Document {
   _id: string;
@@ -9,13 +8,19 @@ export interface Hangout extends Document {
   description: string;
   host: mongoose.Types.ObjectId;
   date: string | Date;
+  price: number;
+  tags?: string[];
   location: {
     type: "Point";
     coordinates: [number, number]; // [lng, lat]
     address: string;
   };
   imageUrl?: string;
-  maxParticipants?: number;
+  maxParticipants: {
+    type: Number;
+    min: [1, "maxParticipants must be at least 1"];
+  };
+
   status: "upcoming" | "ongoing" | "completed" | "cancelled";
   isPublic: boolean;
   createdAt: string | Date;
@@ -41,6 +46,16 @@ const HangoutSchema = new Schema<Hangout>(
       required: [true, "description is required"],
       maxlength: [1000, "description cannot exceed 1000 characters"],
     },
+    price: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+
     host: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -94,7 +109,7 @@ const HangoutSchema = new Schema<Hangout>(
       virtuals: true,
       transform: (_doc, ret: any) => {
         ret.id = ret._id;
-        delete (ret as any)._id;
+        // delete (ret as any)._id;
         delete (ret as any).__v;
 
         // Ensure location always has correct structure

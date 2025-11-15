@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { useEffect, useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
 
 type SuggestItem = {
   id: string;
@@ -20,7 +20,7 @@ export default function LocationInput({
   value,
   onChange,
   onSelect,
-  placeholder = 'Enter a location',
+  placeholder = "Enter a location",
 }: LocationInputProps) {
   const [items, setItems] = useState<SuggestItem[]>([]);
   const [open, setOpen] = useState(false);
@@ -33,9 +33,12 @@ export default function LocationInput({
   const fetchSuggest = async (query: string) => {
     if (abortRef.current) abortRef.current.abort();
     abortRef.current = new AbortController();
-    const res = await fetch(`/api/place-suggest?q=${encodeURIComponent(query)}`, {
-      signal: abortRef.current.signal,
-    });
+    const res = await fetch(
+      `/api/place-suggest?q=${encodeURIComponent(query)}`,
+      {
+        signal: abortRef.current.signal,
+      }
+    );
     if (!res.ok) return { suggestions: [] as SuggestItem[] };
     return res.json() as Promise<{ suggestions: SuggestItem[] }>;
   };
@@ -60,7 +63,7 @@ export default function LocationInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       if (open && items.length > 0 && active >= 0) {
         selectItem(items[active]);
@@ -70,13 +73,13 @@ export default function LocationInput({
 
     if (!open || !items.length) return;
 
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setActive((i) => Math.min(i + 1, items.length - 1));
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setOpen(false);
     }
   };
@@ -90,12 +93,15 @@ export default function LocationInput({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -125,7 +131,7 @@ export default function LocationInput({
                 selectItem(it);
               }}
               className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 ${
-                i === active ? 'bg-gray-100' : ''
+                i === active ? "bg-gray-100" : ""
               }`}
             >
               {it.city && <span className="font-medium block">{it.city}</span>}
@@ -137,4 +143,3 @@ export default function LocationInput({
     </div>
   );
 }
-
