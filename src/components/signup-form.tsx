@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useAuth } from "@/contexts/AuthContext"
-import { useState } from "react"
-import { useRouter } from "next/router"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { useRouter } from "next/router";
 
 export function SignupForm({
   className,
@@ -15,42 +15,53 @@ export function SignupForm({
   const { register, isLoading } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    username: '',
-    password: ''
+    name: "",
+    email: "",
+    username: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
-    if (error) setError('');
+
+    if (error) setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
-    if (!formData.name || !formData.email || !formData.username || !formData.password) {
-      setError('please fill in all fields');
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.username ||
+      !formData.password
+    ) {
+      setError("please fill in all fields");
       return;
     }
 
     try {
       const result = await register(formData);
-      
+
       if (result.success) {
-        router.push('/');
+        const redirect = router.query.redirect as string;
+
+        if (redirect) {
+          router.push(redirect);
+        } else {
+          router.push("/");
+        }
       } else {
-        setError(result.error || 'registration failed');
+        setError(result.error || "registration failed");
       }
     } catch (error) {
-      setError('something went wrong. please try again.');
+      setError("something went wrong. please try again.");
     }
   };
 
@@ -62,18 +73,21 @@ export function SignupForm({
             <h1 className="text-xl font-bold">welcome to hangout!</h1>
             <div className="text-center text-sm">
               already have an account?{" "}
-              <a href="/login" className="underline underline-offset-4 hover:text-zinc-300 transition-all duration-200">
+              <a
+                href="/login"
+                className="underline underline-offset-4 hover:text-zinc-300 transition-all duration-200"
+              >
                 log in
               </a>
             </div>
           </div>
-          
+
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-2 rounded-md text-sm">
               {error}
             </div>
           )}
-          
+
           <div className="flex flex-col gap-6">
             <div className="grid gap-3">
               <Label htmlFor="name">name</Label>
@@ -127,13 +141,13 @@ export function SignupForm({
                 disabled={isLoading}
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-white hover:cursor-pointer transition-all duration-200" 
-              style={{ boxShadow: '0 0 16px rgba(226, 205, 205, 0.8)' }}
+            <Button
+              type="submit"
+              className="w-full bg-white hover:cursor-pointer transition-all duration-200"
+              style={{ boxShadow: "0 0 16px rgba(226, 205, 205, 0.8)" }}
               disabled={isLoading}
             >
-              {isLoading ? 'creating account...' : 'signup'}
+              {isLoading ? "creating account..." : "signup"}
             </Button>
           </div>
         </div>
@@ -143,5 +157,5 @@ export function SignupForm({
         and <a href="#">privacy policy</a>.
       </div>
     </div>
-  )
+  );
 }
