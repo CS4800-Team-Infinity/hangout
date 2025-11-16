@@ -58,6 +58,7 @@ export default function CreateEventPage() {
   const [currentStep, setCurrentStep] = useState<Step>("build");
   const [activeSection, setActiveSection] = useState<string>("title");
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({
     lat: 34.0522,
     lng: -118.2437,
@@ -114,6 +115,14 @@ export default function CreateEventPage() {
     setSelectedLocation(selected);
     const lat = parseFloat(selected.lat);
     const lng = parseFloat(selected.lon);
+
+    // Validate that coordinates are valid numbers
+    if (isNaN(lat) || isNaN(lng)) {
+      console.error("Invalid coordinates received:", { lat: selected.lat, lon: selected.lon });
+      alert("Invalid location coordinates. Please try selecting a different location.");
+      return;
+    }
+
     setMapCenter({ lat, lng });
     setFormData((prev) => ({
       ...prev,
@@ -160,7 +169,14 @@ export default function CreateEventPage() {
     }
 
     if (!formData.location.coordinates) {
-      alert("Please select a valid location");
+      alert("Please select a location from the dropdown suggestions");
+      return;
+    }
+
+    // Validate coordinates are actual numbers
+    const [lng, lat] = formData.location.coordinates;
+    if (typeof lng !== 'number' || typeof lat !== 'number' || isNaN(lng) || isNaN(lat)) {
+      alert("Invalid location coordinates. Please select a location from the dropdown suggestions.");
       return;
     }
 
@@ -241,9 +257,51 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="md:hidden fixed top-20 left-4 z-50 p-2 bg-white rounded-lg shadow-lg border border-gray-200"
+        aria-label="Toggle sidebar"
+      >
+        <svg
+          className="w-6 h-6 text-gray-700"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {isSidebarOpen ? (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          )}
+        </svg>
+      </button>
+
+      {/* Overlay for mobile when sidebar is open */}
+      {isSidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <div className="flex">
-        {/* Left Sidebar - Fixed */}
-        <div className="w-64 bg-white border-r border-gray-200 fixed left-0 top-16 h-[calc(100vh-4rem)] overflow-y-auto z-10">
+        {/* Left Sidebar - Responsive */}
+        <div
+          className={`w-64 bg-white border-r border-gray-200 fixed left-0 top-16 h-[calc(100vh-4rem)] overflow-y-auto z-40 transition-transform duration-300 ease-in-out ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0`}
+        >
           <div className="p-6 space-y-6">
             {/* Navigation Icons */}
             <div className="space-y-4">
@@ -485,7 +543,7 @@ export default function CreateEventPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="ml-64 flex-1 p-8 pt-24">
+        <div className="md:ml-64 flex-1 p-4 md:p-8 pt-24">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Event Image */}
             <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-200">

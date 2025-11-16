@@ -77,10 +77,10 @@ async function handleCreateEvent(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const [lng, lat] = location.coordinates;
-    if (typeof lng !== 'number' || typeof lat !== 'number') {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Coordinates must be numbers' 
+    if (typeof lng !== 'number' || typeof lat !== 'number' || isNaN(lng) || isNaN(lat)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Coordinates must be valid numbers'
       });
     }
 

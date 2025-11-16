@@ -29,7 +29,7 @@ export default async function handler(
         it.address?.hamlet ||
         "",
       lat: it.lat,
-      lng: it.lon,
+      lon: it.lon,
     }));
     res.status(200).json({ suggestions });
   } catch {
