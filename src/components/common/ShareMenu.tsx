@@ -50,7 +50,7 @@ export default function ShareMenu({ eventId, title, onClose }: ShareMenuProps) {
 
   return (
     <div
-      className="absolute right-0 bottom-full mb-12 w-64 bg-white rounded-xl border shadow-lg p-4 z-[99999]"
+      className="absolute  top-1/2 left-full -translate-y-1/2 mb-12 ml-3 w-64 bg-white rounded-xl border shadow-lg p-4 z-[99999]"
       onClick={(e) => {
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
