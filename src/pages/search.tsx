@@ -35,6 +35,27 @@ function MapContent({
     lng: number;
   } | null>(mapCenter);
 
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setUserLocation(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+      },
+      () => {
+        // user denied, hide marker
+        setUserLocation(null);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }, []);
+
   // Fetch all events for the search location
   useEffect(() => {
     const fetchEvents = async () => {
@@ -152,7 +173,10 @@ function MapContent({
               filteredEvents.forEach(
                 (e) => e.coordinates && bounds.extend(e.coordinates)
               );
-              bounds.extend(mapCenter);
+              if (userLocation) {
+                bounds.extend(userLocation);
+              }
+
               map.fitBounds(bounds, 64);
             }
           } else if (map && !searchQuery.trim()) {

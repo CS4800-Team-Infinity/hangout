@@ -47,7 +47,7 @@ function MapContent({
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setUserLocation(defaultCenter);
+      setUserLocation(null);
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -56,7 +56,7 @@ function MapContent({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         }),
-      () => setUserLocation(defaultCenter),
+      () => setUserLocation(null),
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }, [defaultCenter]);
@@ -130,10 +130,8 @@ function MapContent({
   }, [userLocation, fetchEventsInBounds]);
 
   useEffect(() => {
-    if (map && userLocation) {
-      map.setCenter(userLocation);
-      map.setZoom(12);
-    }
+    if (!map || !userLocation) return;
+    map.panTo(userLocation);
   }, [map, userLocation]);
 
   // Close InfoWindow when clicking anywhere on the map
