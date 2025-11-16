@@ -4,6 +4,8 @@ export interface EventDetails {
   uuid?: string;
   title: string;
   description: string;
+  overview?: string;
+  lineup?: string;
   date: string;
 
   price: number;

@@ -491,6 +491,24 @@ export default function EventDetailsPage() {
           </div>
         </div>
 
+        {/* Event Overview */}
+        {event.overview && (
+          <div className="space-y-3 py-4">
+            <h2 className="text-lg font-semibold text-gray-900">Overview</h2>
+            <p className="text-gray-700 whitespace-pre-line">
+              {event.overview}
+            </p>
+          </div>
+        )}
+
+        {/* Lineup */}
+        {event.lineup && (
+          <div className="space-y-3 py-4">
+            <h2 className="text-lg font-semibold text-gray-900">Lineup</h2>
+            <p className="text-gray-700 whitespace-pre-line">{event.lineup}</p>
+          </div>
+        )}
+
         {/* Tickets & Registration */}
         <div className="space-y-4 py-4">
           <h2 className="text-lg font-semibold text-gray-900">

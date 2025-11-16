@@ -6,6 +6,8 @@ export interface Hangout extends Document {
   uuid: string;
   title: string;
   description: string;
+  overview?: string;
+  lineup?: string;
   host: mongoose.Types.ObjectId;
   date: string | Date;
   price: number;
@@ -45,6 +47,14 @@ const HangoutSchema = new Schema<Hangout>(
       type: String,
       required: [true, "description is required"],
       maxlength: [1000, "description cannot exceed 1000 characters"],
+    },
+    overview: {
+      type: String,
+      default: "",
+    },
+    lineup: {
+      type: String,
+      default: "",
     },
     price: {
       type: Number,
