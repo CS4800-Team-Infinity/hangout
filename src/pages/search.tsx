@@ -21,7 +21,10 @@ function MapContent({
   searchQuery: string;
   mapCenter: { lat: number; lng: number };
   onVisibleEventsChange: (events: HangoutEvent[]) => void;
-  onSearchStatus: (status: { found: boolean; type: "city" | "event" | "none" }) => void;
+  onSearchStatus: (status: {
+    found: boolean;
+    type: "city" | "event" | "none";
+  }) => void;
 }) {
   const map = useMap();
   const [allEvents, setAllEvents] = useState<HangoutEvent[]>([]);
@@ -81,11 +84,13 @@ function MapContent({
             if (filteredEvents.length > 0) {
               // Check if we have an exact or close match
               const lowerQuery = searchQuery.toLowerCase();
-              const foundEvent = filteredEvents.find(
-                (event) => event.title.toLowerCase() === lowerQuery
-              ) || filteredEvents.find(
-                (event) => event.title.toLowerCase().includes(lowerQuery)
-              );
+              const foundEvent =
+                filteredEvents.find(
+                  (event) => event.title.toLowerCase() === lowerQuery
+                ) ||
+                filteredEvents.find((event) =>
+                  event.title.toLowerCase().includes(lowerQuery)
+                );
 
               if (foundEvent) {
                 onSearchStatus({ found: true, type: "event" });
@@ -228,6 +233,7 @@ function MapContent({
         >
           <div className="p-8 max-w-[540px] rounded-2xl">
             <EventCardMap
+              key={selectedEvent._id}
               month={selectedEvent.month}
               day={selectedEvent.day}
               title={selectedEvent.title}
@@ -242,7 +248,7 @@ function MapContent({
               price={selectedEvent.price}
               imageUrl={selectedEvent.imageUrl}
               attendees={selectedEvent.attendees}
-              eventId={selectedEvent._id || selectedEvent.uuid}
+              eventId={selectedEvent._id}
               registrationUrl={selectedEvent.registrationUrl}
               actions={true}
             />
@@ -278,9 +284,17 @@ export default function SearchResults() {
   useEffect(() => {
     if (router.isReady) {
       const query = (q as string) || "";
-      const latitude = lat ? parseFloat(lat as string) : 34.0585684;
-      const longitude = lng ? parseFloat(lng as string) : -117.8226053;
-      const location = (city as string);
+      const location = city as string;
+
+      // Parse coordinates with validation
+      const parsedLat = lat ? parseFloat(lat as string) : null;
+      const parsedLng = lng ? parseFloat(lng as string) : null;
+
+      // Only update if we have valid numbers, otherwise use defaults
+      const latitude =
+        parsedLat !== null && !isNaN(parsedLat) ? parsedLat : 34.0585684;
+      const longitude =
+        parsedLng !== null && !isNaN(parsedLng) ? parsedLng : -117.8226053;
 
       setSearchQuery(query);
       setSearchLocation(location);
@@ -296,9 +310,12 @@ export default function SearchResults() {
     setVisibleEvents(events);
   }, []);
 
-  const handleSearchStatus = useCallback((status: { found: boolean; type: "city" | "event" | "none" }) => {
-    setSearchStatus(status);
-  }, []);
+  const handleSearchStatus = useCallback(
+    (status: { found: boolean; type: "city" | "event" | "none" }) => {
+      setSearchStatus(status);
+    },
+    []
+  );
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -403,7 +420,8 @@ export default function SearchResults() {
                       ⚠️ No results found for "{searchQuery}"
                     </p>
                     <p className="text-yellow-700 text-xs mt-1">
-                      Try searching for a different event name or city, or browse events near {searchLocation}.
+                      Try searching for a different event name or city, or
+                      browse events near {searchLocation}.
                     </p>
                   </div>
                 )}
@@ -415,7 +433,9 @@ export default function SearchResults() {
                 <p className="text-gray-500 text-sm mt-2">
                   Showing {visibleEvents.length} event
                   {visibleEvents.length !== 1 ? "s" : ""} in the visible area
-                  {searchQuery && searchStatus.found && ` matching "${searchQuery}"`}
+                  {searchQuery &&
+                    searchStatus.found &&
+                    ` matching "${searchQuery}"`}
                 </p>
               </div>
 

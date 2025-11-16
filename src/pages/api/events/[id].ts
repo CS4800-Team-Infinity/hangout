@@ -118,11 +118,48 @@ async function handleGetEvent(
             status: "upcoming",
           };
 
-    const relatedEvents = await Hangout.find(relatedQuery)
+    // Fetch related events
+    const relatedEventsRaw = await Hangout.find(relatedQuery)
       .populate("host", "name username email")
       .sort({ date: 1 })
       .limit(4)
       .lean();
+
+    // Fetch RSVPs for ALL related events
+    const relatedRSVPs = await RSVP.find({
+      hangout: { $in: relatedEventsRaw.map((e) => e._id) },
+      status: "accepted",
+    })
+      .populate("user", "name username profilePicture")
+      .lean();
+
+    // Group RSVPs by eventId
+    const rsvpByEvent: Record<string, any[]> = {};
+    for (const r of relatedRSVPs) {
+      const key = r.hangout.toString();
+      if (!rsvpByEvent[key]) rsvpByEvent[key] = [];
+      rsvpByEvent[key].push(r.user);
+    }
+
+    // Build final relatedEvents
+    const relatedEvents = relatedEventsRaw.map((e) => {
+      const attendees = (rsvpByEvent[(e._id as any).toString()] || []).map(
+        (u: any) => ({
+          id: u._id?.toString(),
+          name: u.name,
+          avatarUrl:
+            u.profilePicture ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              u.name
+            )}&background=random`,
+        })
+      );
+
+      return {
+        ...e,
+        attendees,
+      };
+    });
 
     // response with event + related
     res.status(200).json({

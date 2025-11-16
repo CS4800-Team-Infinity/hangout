@@ -182,7 +182,7 @@ export default async function handler(
         }));
 
       return {
-        id: h._id.toString(),
+        _id: h._id.toString(),
         title: h.title,
         datetime: date.toISOString(),
         host: (h.host as any)?.name || "Anonymous",

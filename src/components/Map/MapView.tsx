@@ -205,6 +205,9 @@ function MapContent({
         >
           <div className="p-8 max-w-[540px] rounded-2xl ">
             <EventCardMap
+              key={selectedEvent.uuid || selectedEvent._id}
+              eventId={selectedEvent.uuid || selectedEvent._id}
+              variant="list"
               month={selectedEvent.month}
               day={selectedEvent.day}
               title={selectedEvent.title}
@@ -219,7 +222,6 @@ function MapContent({
               price={selectedEvent.price}
               imageUrl={selectedEvent.imageUrl}
               attendees={selectedEvent.attendees}
-              eventId={selectedEvent._id || selectedEvent.uuid}
               registrationUrl={selectedEvent.registrationUrl}
               actions={true}
             />
