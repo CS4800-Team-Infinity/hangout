@@ -26,6 +26,7 @@ export default async function handler(
       isPublic,
       city,
       category,
+      tag,
       q, // Search query for event title
     } = req.query;
 
@@ -58,6 +59,11 @@ export default async function handler(
         $regex: new RegExp(escapeRegex(city as string), "i"),
       };
     if (category) baseFilter.category = category;
+
+    // Add tag filter
+    if (tag) {
+      baseFilter.tags = { $in: [tag] };
+    }
 
     // Determine search radius based on whether we have a specific event search
     const hasEventSearch = q && typeof q === "string" && q.trim();

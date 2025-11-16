@@ -118,8 +118,13 @@ export default function CreateEventPage() {
 
     // Validate that coordinates are valid numbers
     if (isNaN(lat) || isNaN(lng)) {
-      console.error("Invalid coordinates received:", { lat: selected.lat, lon: selected.lon });
-      alert("Invalid location coordinates. Please try selecting a different location.");
+      console.error("Invalid coordinates received:", {
+        lat: selected.lat,
+        lon: selected.lon,
+      });
+      alert(
+        "Invalid location coordinates. Please try selecting a different location."
+      );
       return;
     }
 
@@ -175,8 +180,15 @@ export default function CreateEventPage() {
 
     // Validate coordinates are actual numbers
     const [lng, lat] = formData.location.coordinates;
-    if (typeof lng !== 'number' || typeof lat !== 'number' || isNaN(lng) || isNaN(lat)) {
-      alert("Invalid location coordinates. Please select a location from the dropdown suggestions.");
+    if (
+      typeof lng !== "number" ||
+      typeof lat !== "number" ||
+      isNaN(lng) ||
+      isNaN(lat)
+    ) {
+      alert(
+        "Invalid location coordinates. Please select a location from the dropdown suggestions."
+      );
       return;
     }
 
@@ -208,6 +220,8 @@ export default function CreateEventPage() {
         imageUrl:
           formData.imageUrl ||
           "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop",
+
+        tags: formData.tags,
       };
 
       const response = await fetch("/api/events", {

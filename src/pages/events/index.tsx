@@ -19,6 +19,7 @@ export default function EventsPage() {
   const searchParams = useSearchParams();
   const city = searchParams.get("city");
   const category = searchParams.get("category");
+  const tag = searchParams.get("tag");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +32,7 @@ export default function EventsPage() {
         const params = new URLSearchParams();
         if (city) params.append("city", city);
         if (category) params.append("category", category);
+        if (tag) params.append("tag", tag);
         params.append("status", "upcoming");
 
         const res = await fetch(`/api/hangouts/list?${params.toString()}`);
@@ -52,7 +54,7 @@ export default function EventsPage() {
     };
 
     fetchEvents();
-  }, [city, category]);
+  }, [city, category, tag]);
 
   // Display title dynamically based on URL parameters
   const title = city
@@ -61,6 +63,8 @@ export default function EventsPage() {
     ? `${category
         .replace("-", " ")
         .replace(/\b\w/g, (l) => l.toUpperCase())} Events`
+    : tag
+    ? `${tag.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())} Events`
     : "All Events";
 
   return (
