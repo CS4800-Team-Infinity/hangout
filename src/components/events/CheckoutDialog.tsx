@@ -259,7 +259,7 @@ export default function CheckoutDialog({
             <hr className="mb-8 border-gray-300" />
 
             {/* Event Summary */}
-            <div className="flex gap-4 mb-8 p-4 bg-gray-50 rounded-lg">
+            <div className="flex gap-4 mb-8 p-4 bg-gray-50 rounded-lg text-black">
               <img
                 src={event.imageUrl || "/images/placeholder.png"}
                 alt={event.title}
