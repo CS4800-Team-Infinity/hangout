@@ -67,7 +67,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/" className="link-gradient">
+                <a href="/events" className="link-gradient">
                   Events
                 </a>
               </li>
