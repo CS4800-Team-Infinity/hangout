@@ -327,6 +327,8 @@ export default function SearchResults() {
     lng: -117.8226053,
   });
 
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+
   useEffect(() => {
     if (router.isReady) {
       const query = (q as string) || "";
@@ -366,7 +368,7 @@ export default function SearchResults() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
+    <div className="min-h-screen bg-gray-50 pt-32 lg:pt-16">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -384,7 +386,7 @@ export default function SearchResults() {
 
       {/* Filters and View Toggle */}
       <div className="bg-white border-b border-gray-200 px-6 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 text-gray-500">
             <button className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full transition-colors">
               Date
@@ -408,10 +410,25 @@ export default function SearchResults() {
 
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">View:</span>
-            <button className="px-3 py-1 text-sm rounded-full bg-[#5D5FEF] text-white">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-1 text-sm rounded-full ${
+                viewMode === "list"
+                  ? "bg-[#5D5FEF] text-white"
+                  : "text-gray-500 bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
               List
             </button>
-            <button className="px-3 py-1 text-sm rounded-full text-gray-500 bg-gray-100 hover:bg-gray-200">
+
+            <button
+              onClick={() => setViewMode("map")}
+              className={`px-3 py-1 text-sm rounded-full ${
+                viewMode === "map"
+                  ? "bg-[#5D5FEF] text-white"
+                  : "text-gray-500 bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
               Map
             </button>
           </div>
@@ -420,9 +437,109 @@ export default function SearchResults() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
-          {/* Left Panel - Google Maps View */}
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+        {/* LIST MODE - two column layout */}
+        {viewMode === "list" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Map on top for mobile, left for desktop */}
+            <div
+              className="bg-white rounded-2xl shadow-md overflow-hidden 
+                    h-[260px] lg:h-[calc(100vh-200px)]"
+            >
+              <APIProvider apiKey={apiKey}>
+                <Map
+                  defaultCenter={mapCenter}
+                  defaultZoom={12}
+                  gestureHandling="greedy"
+                  disableDefaultUI={false}
+                  mapId="hangout-search-map"
+                  style={{ width: "100%", height: "100%" }}
+                >
+                  <MapContent
+                    searchQuery={searchQuery}
+                    mapCenter={mapCenter}
+                    onVisibleEventsChange={handleVisibleEventsChange}
+                    onSearchStatus={handleSearchStatus}
+                  />
+                </Map>
+              </APIProvider>
+            </div>
+
+            {/* List below on mobile, right on desktop */}
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+              <div className="p-6 h-full lg:h-[calc(100vh-200px)] flex flex-col">
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    {searchQuery
+                      ? `Search Results for "${searchQuery}"`
+                      : `Search Results for "${searchLocation}"`}
+                  </h1>
+
+                  {!searchStatus.found && searchQuery && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                      <p className="text-yellow-800 text-sm font-medium">
+                        ⚠️ No results found for "{searchQuery}"
+                      </p>
+                      <p className="text-yellow-700 text-xs mt-1">
+                        Try searching for a different event name or city, or
+                        browse events near {searchLocation}.
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="text-gray-600 text-sm">
+                    Browse events and explore them on the interactive map. Pan
+                    and zoom to filter the list.
+                  </p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Showing {visibleEvents.length} event
+                    {visibleEvents.length !== 1 ? "s" : ""} in the visible area
+                    {searchQuery &&
+                      searchStatus.found &&
+                      ` matching "${searchQuery}"`}
+                  </p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {visibleEvents.length === 0 ? (
+                    <div className="flex items-center justify-center h-32">
+                      <div className="text-gray-500">
+                        No events visible in this area
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {visibleEvents.map((event, index) => (
+                        <EventCardList
+                          key={event.uuid || event._id || `event-list-${index}`}
+                          month={event.month}
+                          day={event.day}
+                          title={event.title}
+                          location={
+                            typeof event.location === "string"
+                              ? event.location
+                              : event.location?.address ?? "Unknown location"
+                          }
+                          datetime={event.datetime}
+                          host={event.host}
+                          status={event.status}
+                          price={event.price}
+                          imageUrl={event.imageUrl}
+                          attendees={event.attendees}
+                          eventId={event._id || event.uuid}
+                          registrationUrl={event.registrationUrl}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MAP MODE - full width map */}
+        {viewMode === "map" && (
+          <div className="bg-white rounded-2xl shadow-md overflow-hidden h-[calc(100vh-200px)]">
             <APIProvider apiKey={apiKey}>
               <Map
                 defaultCenter={mapCenter}
@@ -441,78 +558,7 @@ export default function SearchResults() {
               </Map>
             </APIProvider>
           </div>
-
-          {/* Right Panel - Event List (filtered by visible map area) */}
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="p-6 h-full flex flex-col">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  {searchQuery
-                    ? `Search Results for "${searchQuery}"`
-                    : `Search Results for "${searchLocation}"`}
-                </h1>
-
-                {!searchStatus.found && searchQuery && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-                    <p className="text-yellow-800 text-sm font-medium">
-                      ⚠️ No results found for "{searchQuery}"
-                    </p>
-                    <p className="text-yellow-700 text-xs mt-1">
-                      Try searching for a different event name or city, or
-                      browse events near {searchLocation}.
-                    </p>
-                  </div>
-                )}
-
-                <p className="text-gray-600 text-sm">
-                  Browse events and explore them on the interactive map. Pan and
-                  zoom to filter the list.
-                </p>
-                <p className="text-gray-500 text-sm mt-2">
-                  Showing {visibleEvents.length} event
-                  {visibleEvents.length !== 1 ? "s" : ""} in the visible area
-                  {searchQuery &&
-                    searchStatus.found &&
-                    ` matching "${searchQuery}"`}
-                </p>
-              </div>
-
-              <div className="flex-1 overflow-y-auto">
-                {visibleEvents.length === 0 ? (
-                  <div className="flex items-center justify-center h-32">
-                    <div className="text-gray-500">
-                      No events visible in this area
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {visibleEvents.map((event, index) => (
-                      <EventCardList
-                        key={event.uuid || event._id || `event-list-${index}`}
-                        month={event.month}
-                        day={event.day}
-                        title={event.title}
-                        location={
-                          typeof event.location === "string"
-                            ? event.location
-                            : event.location?.address ?? "Unknown location"
-                        }
-                        datetime={event.datetime}
-                        host={event.host}
-                        status={event.status}
-                        price={event.price}
-                        imageUrl={event.imageUrl}
-                        attendees={event.attendees}
-                        eventId={event._id || event.uuid}
-                        registrationUrl={event.registrationUrl}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

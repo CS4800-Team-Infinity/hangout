@@ -63,14 +63,14 @@ export default function ExploreCategories() {
       <div className="overflow-hidden">
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto scrollbar-hide px-2 py-2"
+          className="flex gap-6 overflow-x-auto scrollbar-hide px-2 "
         >
           {categories.map((tag) => (
             <Link
               key={tag.name}
               href={`/events?tag=${encodeURIComponent(tag.slug)}`}
               className="w-[280px] flex-shrink-0 flex flex-col items-center justify-center 
-                         rounded-xl p-6 shadow-lg shadow-[#5D5FEF]/100 
+                         rounded-xl p-10 shadow-lg shadow-[#5D5FEF]/100 
                          hover:shadow-[#5D5FEF]/70 hover:scale-105 transition
                          bg-purple-900 text-white"
             >

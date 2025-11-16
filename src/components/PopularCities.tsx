@@ -11,7 +11,7 @@ export default function PopularCities() {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto  py-12">
+    <section className="max-w-7xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6">
         Popular cities in United States
       </h2>
