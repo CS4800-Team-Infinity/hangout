@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
-import EventCardHome from "@/components/EventCard/EventCardHome";
 import ShareMenu from "@/components/common/ShareMenu";
 import RSVPDialog from "@/components/events/RSVPDialog";
 import CheckoutDialog from "@/components/events/CheckoutDialog";

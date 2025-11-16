@@ -67,12 +67,15 @@ export default function CheckoutDialog({
           },
         });
 
+        if (!res.ok) {
+          console.log("Failed to load user profile");
+          return;
+        }
+
         const data = await res.json();
 
-        if (res.ok && data.user) {
-          setLocalUser(data.user); // set full user data
-        } else {
-          console.error("Failed to load user profile", data);
+        if (data.user) {
+          setLocalUser(data.user);
         }
       } catch (err) {
         console.error("Error loading user profile", err);
@@ -121,6 +124,7 @@ export default function CheckoutDialog({
 
       if (!userId || !eventId) {
         console.log("❌ Missing userId or eventId");
+        alert("Please log in to register for this event.");
         return;
       }
 
@@ -132,8 +136,13 @@ export default function CheckoutDialog({
 
       let data;
       try {
-        data = await res.json();
-      } catch {}
+        const text = await res.text();
+        if (text) {
+          data = JSON.parse(text);
+        }
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
+      }
 
       // Already registered
       if (res.status === 409) {
@@ -143,7 +152,10 @@ export default function CheckoutDialog({
         return startBackToEventCountdown(eventId);
       }
 
-      if (!res.ok) return;
+      if (!res.ok) {
+        alert("Failed to register. Please try again.");
+        return;
+      }
 
       // Success
       setHasRegistered(true);
@@ -152,11 +164,11 @@ export default function CheckoutDialog({
       return startBackToEventCountdown(eventId);
     } catch (err) {
       console.error("RSVP error", err);
+      alert("An error occurred. Please try again.");
     }
   };
 
   const handleLogin = () => {
-    // Get current page URL with checkout parameters
     const eventId = event._id;
     const currentUrl = window.location.origin + window.location.pathname;
     const redirectUrl = `${currentUrl}?checkout=true&quantity=${quantity}`;
@@ -164,7 +176,6 @@ export default function CheckoutDialog({
   };
 
   const handleSignup = () => {
-    // Get current page URL with checkout parameters
     const eventId = event._id;
     const currentUrl = window.location.origin + window.location.pathname;
     const redirectUrl = `${currentUrl}?checkout=true&quantity=${quantity}`;
@@ -174,21 +185,37 @@ export default function CheckoutDialog({
   };
 
   useEffect(() => {
-    if (!localUser?._id || !event?._id) return;
+    if (!localUser?._id || !event?._id || !isOpen) return;
 
     async function checkRSVP() {
-      const res = await fetch(
-        `/api/rsvp/check?eventId=${event._id}&userId=${localUser?._id}`
-      );
-      const data = await res.json();
+      try {
+        const res = await fetch(
+          `/api/rsvp/check?eventId=${event._id}&userId=${localUser?._id}`
+        );
 
-      if (data.already) {
-        setHasRegistered(true);
+        if (!res.ok) {
+          console.log("Could not check RSVP status");
+          return;
+        }
+
+        const text = await res.text();
+        if (!text) {
+          console.log("Empty response from RSVP check");
+          return;
+        }
+
+        const data = JSON.parse(text);
+
+        if (data.already) {
+          setHasRegistered(true);
+        }
+      } catch (error) {
+        console.error("Error checking RSVP:", error);
       }
     }
 
     checkRSVP();
-  }, [event, localUser]);
+  }, [event, localUser, isOpen]);
 
   // Timer logic
   useEffect(() => {
@@ -275,12 +302,10 @@ export default function CheckoutDialog({
                   <button
                     onClick={() => {
                       localStorage.removeItem("token");
-                      setLocalUser(null); // clear user in UI
+                      setLocalUser(null);
                       setFullName("");
                       setEmail("");
                       setConfirmEmail("");
-
-                      // stay on checkout dialog
                     }}
                     className="text-[#5D5FEF] hover:underline ml-1"
                   >
@@ -387,9 +412,9 @@ export default function CheckoutDialog({
                       setKeepUpdated(checked as boolean)
                     }
                     className="border-gray-400 data-[state=unchecked]:bg-white 
-             data-[state=unchecked]:border-gray-400
-             data-[state=checked]:bg-indigo-600 
-             data-[state=checked]:border-indigo-600"
+                    data-[state=unchecked]:border-gray-400
+                    data-[state=checked]:bg-indigo-600 
+                    data-[state=checked]:border-indigo-600"
                   />
                   <label
                     htmlFor="keep-updated"
@@ -408,9 +433,9 @@ export default function CheckoutDialog({
                       setSendEmails(checked as boolean)
                     }
                     className="border-gray-400 data-[state=unchecked]:bg-white 
-             data-[state=unchecked]:border-gray-400
-             data-[state=checked]:bg-indigo-600 
-             data-[state=checked]:border-indigo-600"
+                    data-[state=unchecked]:border-gray-400
+                    data-[state=checked]:bg-indigo-600 
+                    data-[state=checked]:border-indigo-600"
                   />
                   <label
                     htmlFor="send-emails"

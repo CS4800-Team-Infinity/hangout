@@ -13,9 +13,18 @@ interface User {
 interface RSVPPopupProps {
   event: EventDetails;
   user?: User | null;
+  isOpen?: boolean;
+  onClose?: () => void;
+  skipButton?: boolean;
 }
 
-export default function RSVPPopup({ event, user }: RSVPPopupProps) {
+export default function RSVPPopup({
+  event,
+  user,
+  isOpen,
+  onClose,
+  skipButton = false,
+}: RSVPPopupProps) {
   const [quantity, setQuantity] = useState(1);
   const [showCheckout, setShowCheckout] = useState(false);
   const [isRSVPOpen, setIsRSVPOpen] = useState(false);
@@ -60,20 +69,34 @@ export default function RSVPPopup({ event, user }: RSVPPopupProps) {
     setShowCheckout(false);
   };
 
+  useEffect(() => {
+    if (isOpen !== undefined) {
+      setIsRSVPOpen(isOpen);
+    }
+  }, [isOpen]);
+
   return (
     <>
-      <Dialog open={isRSVPOpen} onOpenChange={setIsRSVPOpen}>
+      <Dialog
+        open={isRSVPOpen}
+        onOpenChange={(open) => {
+          setIsRSVPOpen(open);
+          if (!open && onClose) onClose();
+        }}
+      >
         <DialogTrigger asChild>
-          <Button
-            className="
+          {!skipButton && (
+            <Button
+              className="
               bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8]
             hover:from-[#EF5DA8] hover:to-[#5D5FEF]
             text-white px-8 py-6 text-base
               transition-all duration-300
             "
-          >
-            Get Ticket
-          </Button>
+            >
+              Get Ticket
+            </Button>
+          )}
         </DialogTrigger>
 
         <DialogContent className="!max-w-[1200px] !w-[95vw] max-h-[90vh] p-0 rounded-xl overflow-auto bg-white">
@@ -199,7 +222,7 @@ export default function RSVPPopup({ event, user }: RSVPPopupProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Checkout Dialog - Separate from RSVP Dialog */}
+      {/* Checkout Dialog*/}
       <CheckoutDialog
         event={event}
         user={user}
