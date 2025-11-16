@@ -6,15 +6,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import SearchBox from "@/components/Map/SearchBox";
-
-type SuggestItem = {
-  id: string;
-  label: string;
-  city: string;
-  lat: string;
-  lon: string;
-};
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
@@ -22,104 +13,24 @@ export function Navbar() {
 
   const [mounted, setMounted] = useState(false);
   const [q, setQ] = useState("");
-  const [city, setCity] = useState<string>("Your city");
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     setMounted(true);
-
-    // Prefer user's city from profile if available
-    if ((user as any)?.city) {
-      setCity((user as any).city);
-      return;
-    }
-
-    // Otherwise use geolocation
-    if (typeof navigator !== "undefined" && "geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async ({ coords }) => {
-          try {
-            const r = await fetch(
-              `/api/reverse-geocode?lat=${coords.latitude}&lng=${coords.longitude}`
-            );
-            const data = r.ok ? await r.json() : null;
-            setCity(data?.city || "Your city");
-          } catch {
-            setCity("Your city");
-          }
-        },
-        () => setCity("Your city"),
-        { timeout: 5000 }
-      );
-    }
-  }, [user]);
+  }, []);
 
   const handleLogout = () => logout();
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("🔍 handleSearch called with q:", q, "city:", city);
 
-    if (!q.trim() && city === "Your city") {
-      console.log("⚠️ No search term or city, returning early");
+    if (!q.trim()) {
       return;
     }
 
     const params = new URLSearchParams();
+    params.append("q", q.trim());
 
-    // Determine what to search for
-    const searchTerm = q.trim() || city;
-    console.log("🔍 Search term:", searchTerm);
-
-    // Always add the search query
-    if (q.trim()) {
-      params.append("q", q.trim());
-    }
-
-    // Try to geocode the search term to get coordinates
-    if (selectedLocation) {
-      // User explicitly selected a location from dropdown
-      console.log("📍 Using selected location:", selectedLocation);
-      params.append("lat", selectedLocation.lat.toString());
-      params.append("lng", selectedLocation.lng.toString());
-      params.append("city", city !== "Your city" ? city : "Selected Location");
-    } else {
-      // Try to geocode the search term (could be city name or location)
-      try {
-        console.log("🌐 Geocoding search term:", searchTerm);
-        const response = await fetch(`/api/place-suggest?q=${encodeURIComponent(searchTerm)}`);
-        console.log("🌐 Geocode response status:", response.status);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("🌐 Geocode data:", data);
-
-          if (data.suggestions && data.suggestions.length > 0) {
-            const firstResult = data.suggestions[0];
-            console.log("✅ Found geocode result:", firstResult);
-            params.append("lat", firstResult.lat);
-            params.append("lng", firstResult.lon);
-            params.append("city", firstResult.city || firstResult.label);
-          } else if (city !== "Your city") {
-            // Fallback to current city
-            console.log("⚠️ No geocode results, using current city:", city);
-            params.append("city", city);
-          }
-        } else if (city !== "Your city") {
-          console.log("⚠️ Geocode failed, using current city:", city);
-          params.append("city", city);
-        }
-      } catch (error) {
-        console.error("❌ Error geocoding:", error);
-        if (city !== "Your city") {
-          params.append("city", city);
-        }
-      }
-    }
-
-    const searchUrl = `/search?${params.toString()}`;
-    console.log("🚀 Navigating to:", searchUrl);
-    router.push(searchUrl);
+    router.push(`/search?${params.toString()}`);
   };
 
   return (
@@ -152,25 +63,10 @@ export function Navbar() {
                   <span aria-hidden>🔍</span>
                   <input
                     type="text"
-                    placeholder="Search event..."
+                    placeholder="Search"
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     className="w-full bg-transparent text-black placeholder-zinc-500 focus:outline-none"
-                  />
-                  <span className="h-6 w-px bg-gradient-to-b from-transparent via-zinc-300 to-transparent" />
-                  <span aria-hidden>📍</span>
-
-                  {/* Reusable SearchBox component */}
-                  <SearchBox
-                    initialCity={city}
-                    disableAutoNavigation={true}
-                    onSelect={(selected: SuggestItem) => {
-                      setCity(selected.city || selected.label);
-                      setSelectedLocation({
-                        lat: parseFloat(selected.lat),
-                        lng: parseFloat(selected.lon),
-                      });
-                    }}
                   />
 
                   {/* Search Button */}
@@ -178,7 +74,7 @@ export function Navbar() {
                     type="submit"
                     className="ml-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white text-sm font-semibold hover:from-[#EF5DA8] hover:to-[#5D5FEF] transition-all"
                   >
-                    Search
+                    Go
                   </button>
                 </div>
               </div>
@@ -244,24 +140,10 @@ export function Navbar() {
                 <span aria-hidden>🔍</span>
                 <input
                   type="text"
-                  placeholder="Search event..."
+                  placeholder="Search"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   className="w-full bg-transparent text-black placeholder-zinc-500 focus:outline-none"
-                />
-                <span className="h-6 w-px bg-gradient-to-b from-transparent via-zinc-300 to-transparent" />
-                <span aria-hidden>📍</span>
-
-                <SearchBox
-                  initialCity={city}
-                  disableAutoNavigation={true}
-                  onSelect={(selected: SuggestItem) => {
-                    setCity(selected.city || selected.label);
-                    setSelectedLocation({
-                      lat: parseFloat(selected.lat),
-                      lng: parseFloat(selected.lon),
-                    });
-                  }}
                 />
 
                 {/* Search Button */}
