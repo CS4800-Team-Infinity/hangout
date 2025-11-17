@@ -311,6 +311,53 @@ function MapContent({
   );
 }
 
+type SearchHeaderProps = {
+  searchQuery: string;
+  searchLocation: string;
+  searchStatus: { found: boolean };
+  visibleEvents: any[];
+};
+
+function SearchHeader({
+  searchQuery,
+  searchLocation,
+  searchStatus,
+  visibleEvents,
+}: SearchHeaderProps) {
+  return (
+    <div className="mb-6">
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        {searchQuery
+          ? `Search Results for "${searchQuery}"`
+          : `Search Results for "${searchLocation}"`}
+      </h1>
+
+      {!searchStatus.found && searchQuery && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+          <p className="text-yellow-800 text-sm font-medium">
+            ⚠️ No results found for "{searchQuery}"
+          </p>
+          <p className="text-yellow-700 text-xs mt-1">
+            Try searching for a different event name or city, or browse events
+            near {searchLocation}.
+          </p>
+        </div>
+      )}
+
+      <p className="text-gray-600 text-sm">
+        Browse events and explore them on the interactive map. Pan and zoom to
+        filter the list.
+      </p>
+
+      <p className="text-gray-500 text-sm mt-2">
+        Showing {visibleEvents.length} event
+        {visibleEvents.length !== 1 ? "s" : ""} in the visible area
+        {searchQuery && searchStatus.found && ` matching "${searchQuery}"`}
+      </p>
+    </div>
+  );
+}
+
 export default function SearchResults() {
   const router = useRouter();
   const { q, lat, lng, city } = router.query;
@@ -467,37 +514,12 @@ export default function SearchResults() {
             {/* List below on mobile, right on desktop */}
             <div className="bg-white rounded-2xl shadow-md overflow-hidden">
               <div className="p-6 h-full lg:h-[calc(100vh-200px)] flex flex-col">
-                <div className="mb-6">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                    {searchQuery
-                      ? `Search Results for "${searchQuery}"`
-                      : `Search Results for "${searchLocation}"`}
-                  </h1>
-
-                  {!searchStatus.found && searchQuery && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-                      <p className="text-yellow-800 text-sm font-medium">
-                        ⚠️ No results found for "{searchQuery}"
-                      </p>
-                      <p className="text-yellow-700 text-xs mt-1">
-                        Try searching for a different event name or city, or
-                        browse events near {searchLocation}.
-                      </p>
-                    </div>
-                  )}
-
-                  <p className="text-gray-600 text-sm">
-                    Browse events and explore them on the interactive map. Pan
-                    and zoom to filter the list.
-                  </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    Showing {visibleEvents.length} event
-                    {visibleEvents.length !== 1 ? "s" : ""} in the visible area
-                    {searchQuery &&
-                      searchStatus.found &&
-                      ` matching "${searchQuery}"`}
-                  </p>
-                </div>
+                <SearchHeader
+                  searchQuery={searchQuery}
+                  searchLocation={searchLocation}
+                  searchStatus={searchStatus}
+                  visibleEvents={visibleEvents}
+                />
 
                 <div className="flex-1 overflow-y-auto">
                   {visibleEvents.length === 0 ? (
@@ -539,25 +561,38 @@ export default function SearchResults() {
 
         {/* MAP MODE - full width map */}
         {viewMode === "map" && (
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden h-[calc(100vh-200px)]">
-            <APIProvider apiKey={apiKey}>
-              <Map
-                defaultCenter={mapCenter}
-                defaultZoom={12}
-                gestureHandling="greedy"
-                disableDefaultUI={false}
-                mapId="hangout-search-map"
-                style={{ width: "100%", height: "100%" }}
-              >
-                <MapContent
-                  searchQuery={searchQuery}
-                  mapCenter={mapCenter}
-                  onVisibleEventsChange={handleVisibleEventsChange}
-                  onSearchStatus={handleSearchStatus}
-                />
-              </Map>
-            </APIProvider>
-          </div>
+          <>
+            {/* Header */}
+            <div className="p-2">
+              <SearchHeader
+                searchQuery={searchQuery}
+                searchLocation={searchLocation}
+                searchStatus={searchStatus}
+                visibleEvents={visibleEvents}
+              />
+            </div>
+
+            {/* Map content */}
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden h-[calc(100vh-200px)]">
+              <APIProvider apiKey={apiKey}>
+                <Map
+                  defaultCenter={mapCenter}
+                  defaultZoom={12}
+                  gestureHandling="greedy"
+                  disableDefaultUI={false}
+                  mapId="hangout-search-map"
+                  style={{ width: "100%", height: "100%" }}
+                >
+                  <MapContent
+                    searchQuery={searchQuery}
+                    mapCenter={mapCenter}
+                    onVisibleEventsChange={handleVisibleEventsChange}
+                    onSearchStatus={handleSearchStatus}
+                  />
+                </Map>
+              </APIProvider>
+            </div>
+          </>
         )}
       </div>
     </div>
