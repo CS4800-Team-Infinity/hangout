@@ -73,7 +73,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen text-gray-900 mt-14 space-y-6">
+    <div className="min-h-screen text-gray-900 pt-28 lg:pt-14 space-y-6">
       {/* ===== Hero Section ===== */}
       <section className="max-w-7xl mx-auto px-6 md:px-12 py-12 flex flex-col md:flex-row items-center justify-between gap-10">
         <div className="md:w-[80%] w-full h-[400px] rounded-2xl overflow-hidden shadow-lg">

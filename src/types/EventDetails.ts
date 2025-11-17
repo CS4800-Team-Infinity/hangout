@@ -8,8 +8,12 @@ export interface EventDetails {
   lineup?: string;
   date: string;
 
-  price: number;
+  price?: string | number;
 
+  // For Google Maps
+  coordinates?: google.maps.LatLngLiteral;
+
+  // Original location from backend
   location: {
     address: string;
     coordinates: [number, number];
@@ -26,14 +30,16 @@ export interface EventDetails {
   imageUrl?: string;
   maxParticipants?: number;
   isPublic: boolean;
-  status: string;
+  status?: "Joined" | "Saved" | "Just Viewed" | string;
 
   attendeeCount: number;
-  attendees: Array<{
+  attendees?: Array<{
     _id: string;
+    id?: string;
     name: string;
     username: string;
     email: string;
+    avatarUrl?: string;
   }>;
 
   tags?: string[];

@@ -8,7 +8,7 @@ import RSVPPopup from "../events/RSVPDialog";
 export type Attendee = {
   id: string;
   name: string;
-  avatarUrl: string;
+  avatarUrl?: string;
 };
 
 export type EventCardProps = {
