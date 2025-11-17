@@ -6,11 +6,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const heroSlides = [
   {
     id: 1,
-    title: "Trending This Week",
-    subtitle: "Discover the hottest events everyone's talking about",
-    link: "/events/trending",
-    image:
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=400&fit=crop",
+    title: "Enjoy Offer",
+    subtitle: "Limited-time",
+    link: "/events/enjoy-offer",
+    image: "images/hero-ads.png",
   },
   {
     id: 2,
@@ -22,8 +21,8 @@ const heroSlides = [
   },
   {
     id: 3,
-    title: "This Weekend",
-    subtitle: "Make your weekend unforgettable",
+    title: "Trending This Week",
+    subtitle: "Discover the hottest events everyone's talking about",
     link: "/events/weekend",
     image:
       "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200&h=400&fit=crop",
@@ -65,7 +64,15 @@ const HeroCarousel = () => {
             className="w-full h-full bg-cover bg-center relative"
             style={{ backgroundImage: `url(${slide.image})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30 flex items-center">
+            <div
+              className="
+  absolute inset-0 
+  bg-gradient-to-r from-black/70 to-black/30
+  flex 
+  items-end md:items-center
+  pb-8 md:pb-0
+"
+            >
               <div className="px-8 md:px-16 text-white">
                 <h1 className="text-3xl md:text-5xl font-bold mb-2">
                   {slide.title}
@@ -81,14 +88,14 @@ const HeroCarousel = () => {
 
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-colors"
+        className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 transition-colors"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
 
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-colors"
+        className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
       >
         <ChevronRight className="w-6 h-6" />
       </button>

@@ -47,11 +47,6 @@ export default function Footer() {
                   Log in
                 </a>
               </li>
-              <li>
-                <a href="/" className="link-gradient">
-                  Help
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -62,8 +57,8 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
-                <a href="/" className="link-gradient">
-                  Group
+                <a href="/explore" className="link-gradient">
+                  Explore
                 </a>
               </li>
               <li>
@@ -79,11 +74,6 @@ export default function Footer() {
               <li>
                 <a href="/" className="link-gradient">
                   Online event
-                </a>
-              </li>
-              <li>
-                <a href="/" className="link-gradient">
-                  Map View
                 </a>
               </li>
             </ul>

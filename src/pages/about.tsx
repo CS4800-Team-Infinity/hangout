@@ -207,10 +207,12 @@ export default function About() {
         </section>
 
         {/* Existing Content Sections */}
-        <div className="max-w-6xl mx-auto px-4 md:px-10 py-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-10 py-20">
           {/* About Us Section */}
           <section className="mb-20">
-            <h2 className="text-4xl font-bold mb-6 text-center">About Us</h2>
+            <h2 className="text-4xl font-bold mb-6 text-center text-black">
+              About Us
+            </h2>
             <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-zinc-200">
               <p className="text-lg text-zinc-700 leading-relaxed">
                 {aboutData?.mission ||
@@ -221,7 +223,9 @@ export default function About() {
 
           {/* The Problem Section */}
           <section className="mb-20">
-            <h2 className="text-4xl font-bold mb-6 text-center">The Problem</h2>
+            <h2 className="text-4xl font-bold mb-6 text-center text-black">
+              The Problem
+            </h2>
             <div className="grid gap-4 md:grid-cols-3">
               {problems.map((problem, idx) => (
                 <div
@@ -236,7 +240,7 @@ export default function About() {
 
           {/* Our Solution Section */}
           <section className="mb-20">
-            <h2 className="text-4xl font-bold mb-6 text-center">
+            <h2 className="text-4xl font-bold mb-6 text-center text-black">
               Our Solution
             </h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -258,7 +262,7 @@ export default function About() {
           {/* Team Section */}
           {aboutData?.teamMembers && aboutData.teamMembers.length > 0 && (
             <section className="mb-20">
-              <h2 className="text-4xl font-bold mb-6 text-center">
+              <h2 className="text-4xl font-bold mb-6 text-center text-black">
                 Meet the Team
               </h2>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -293,7 +297,7 @@ export default function About() {
           )}
 
           {/* CTA Section */}
-          <section className="max-w-4xl mx-auto text-center">
+          <section className="max-w-7xl mx-auto text-center">
             <div className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] rounded-2xl shadow-2xl p-12 text-white">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Ready to start hanging out?

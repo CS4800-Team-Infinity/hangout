@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
 interface AboutResponse {
   success: boolean;
@@ -21,18 +21,18 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<AboutResponse>
 ) {
-  if (req.method !== 'GET') {
+  if (req.method !== "GET") {
     return res.status(405).json({
       success: false,
       data: {
-        appName: '',
-        team: '',
-        description: '',
-        mission: '',
+        appName: "",
+        team: "",
+        description: "",
+        mission: "",
         features: [],
         techStack: [],
-        teamMembers: []
-      }
+        teamMembers: [],
+      },
     });
   }
 
@@ -41,8 +41,10 @@ export default function handler(
     data: {
       appName: "Hangout",
       team: "Infinity",
-      description: "An Event Planner & Group Hangout Web App for Fall 2025. One place to discover events, pick a time together, and confirm who is in.",
-      mission: "Together, we aim to create a platform that makes organizing events and connecting with friends easier and more enjoyable. With our shared creativity and teamwork, we look forward to building a project that brings people together.",
+      description:
+        "An Event Planner & Group Hangout Web App for Fall 2025. One place to discover events, pick a time together, and confirm who is in.",
+      mission:
+        "Together, we aim to create a platform that makes organizing events and connecting with friends easier and more enjoyable. With our shared creativity and teamwork, we look forward to building a project that brings people together.",
       features: [
         "Discover local events on a map",
         "Create events in seconds",
@@ -51,7 +53,7 @@ export default function handler(
         "Quick Create with shareable links",
         "RSVPs & Reminders",
         "Calendar Sync",
-        "Hangout Tracker with streaks"
+        "Hangout Tracker with streaks",
       ],
       techStack: [
         "Next.js (React with TypeScript)",
@@ -59,30 +61,30 @@ export default function handler(
         "JWT Authentication",
         "Tailwind CSS",
         "WebSockets for real-time updates",
-        "Email and SMS notifications"
+        "Email and SMS notifications",
       ],
       teamMembers: [
         {
           name: "Tam Tran",
           role: "Full-stack Developer, UX/UI Designer",
-          github: "https://github.com/itistamtran"
-        },
-        {
-          name: "Kenneth Chau",
-          role: "Full-stack Developer",
-          github: "https://github.com/contactkc"
-        },
-        {
-          name: "Kira Inman",
-          role: "Full-stack Developer",
-          github: "https://github.com/CranKinman"
+          github: "https://github.com/itistamtran",
         },
         {
           name: "David Torres",
           role: "Full-stack Developer",
-          github: "https://github.com/datorres335"
-        }
-      ]
-    }
+          github: "https://github.com/datorres335",
+        },
+        {
+          name: "Kenneth Chau",
+          role: "Full-stack Developer",
+          github: "https://github.com/contactkc",
+        },
+        {
+          name: "Kira Inman",
+          role: "Full-stack Developer",
+          github: "https://github.com/CranKinman",
+        },
+      ],
+    },
   });
 }

@@ -12,17 +12,27 @@ const ExplorePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <HeroCarousel />
-
-        <NearbyEventsSection />
-
-        <HotToday />
-
-        <HotArea />
-
-        <ExploreCategories />
+        <section className="pt-12">
+          <HeroCarousel />
+        </section>
 
         <section className="pt-12">
+          <NearbyEventsSection />
+        </section>
+
+        <section className="pt-20">
+          <HotToday />
+        </section>
+
+        <section className="pt-20">
+          <HotArea />
+        </section>
+
+        <section className="pt-12">
+          <ExploreCategories />
+        </section>
+
+        <section className="pt-20">
           <TrendingSearches />
         </section>
       </div>

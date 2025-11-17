@@ -52,6 +52,12 @@ export function Navbar() {
                 HangOut
               </span>
             </Link>
+            <Link
+              href="/explore"
+              className="hidden md:block text-md font-semibold text-black transition-colors hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#5D5FEF] hover:to-[#EF5DA8]"
+            >
+              Explore
+            </Link>
 
             {/* Desktop Search */}
             <form

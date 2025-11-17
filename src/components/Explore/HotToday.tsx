@@ -64,10 +64,10 @@ const HotToday = () => {
   if (events.length === 0) return null;
 
   return (
-    <div className="py-12">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Flame className="w-6 h-6 text-orange-500" />
+    <div className="mb-0">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 ">
+          <Flame className="w-6 h-6 text-[#EF5DA8]" />
           <h2 className="text-2xl font-bold text-gray-900">Hot Today</h2>
         </div>
 
@@ -75,10 +75,10 @@ const HotToday = () => {
           <button
             onClick={handlePrev}
             disabled={!canGoPrev}
-            className={`p-2 rounded-full border transition-colors ${
+            className={`p-2 rounded-full border transition-colors text-[#EF5DA8] ${
               canGoPrev
-                ? "border-gray-300 hover:bg-gray-100"
-                : "border-gray-200 text-gray-300 cursor-not-allowed"
+                ? "border-gray-300 hover:bg-gray-100 hover:text-[#5D5FEF]"
+                : "border-gray-200 text-[#EF5DA8] cursor-not-allowed"
             }`}
           >
             <ChevronLeft className="w-5 h-5" />
@@ -87,10 +87,10 @@ const HotToday = () => {
           <button
             onClick={handleNext}
             disabled={!canGoNext}
-            className={`p-2 rounded-full border transition-colors ${
+            className={`p-2 rounded-full border transition-colors text-[#EF5DA8] ${
               canGoNext
-                ? "border-gray-300 hover:bg-gray-100"
-                : "border-gray-200 text-gray-300 cursor-not-allowed"
+                ? "border-gray-300 hover:bg-gray-100 hover:text-[#5D5FEF]"
+                : "border-gray-200 text-[#EF5DA8] cursor-not-allowed"
             }`}
           >
             <ChevronRight className="w-5 h-5" />

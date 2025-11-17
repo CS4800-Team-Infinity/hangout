@@ -44,9 +44,9 @@ const HotArea = () => {
 
   if (loading) {
     return (
-      <div className="py-12">
-        <div className="flex items-center gap-2 mb-4">
-          <MapPin className="w-6 h-6 text-blue-500" />
+      <div className="mb-0">
+        <div className="flex items-center gap-2 mb-6">
+          <MapPin className="w-6 h-6 text-[#5D5FEF]" />
           <h2 className="text-2xl font-bold text-gray-900">Hot Areas</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -67,7 +67,7 @@ const HotArea = () => {
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4 relative z-20">
         <div className="flex items-center gap-2">
-          <MapPin className="w-6 h-6 text-blue-500" />
+          <MapPin className="w-6 h-6 text-[#5D5FEF]" />
           <h2 className="text-2xl font-bold text-gray-900">Hot Areas</h2>
         </div>
 
@@ -75,10 +75,10 @@ const HotArea = () => {
           <button
             onClick={handlePrev}
             disabled={!canGoPrev}
-            className={`p-2 rounded-full border transition-colors ${
+            className={`p-2 rounded-full border transition-colors text-[#5D5FEF] ${
               canGoPrev
-                ? "border-gray-300 hover:bg-gray-100"
-                : "border-gray-200 text-gray-300 cursor-not-allowed"
+                ? "border-gray-300 hover:bg-gray-100 hover:text-[#EF5DA8]"
+                : "border-gray-200 text-[#5D5FEF] cursor-not-allowed"
             }`}
           >
             <ChevronLeft className="w-5 h-5" />
@@ -87,10 +87,10 @@ const HotArea = () => {
           <button
             onClick={handleNext}
             disabled={!canGoNext}
-            className={`p-2 rounded-full border transition-colors ${
+            className={`p-2 rounded-full border transition-colors text-[#5D5FEF] ${
               canGoNext
-                ? "border-gray-300 hover:bg-gray-100"
-                : "border-gray-200 text-gray-300 cursor-not-allowed"
+                ? "border-gray-300 hover:bg-gray-100 hover:text-[#EF5DA8]"
+                : "border-gray-200 text-[#5D5FEF] cursor-not-allowed"
             }`}
           >
             <ChevronRight className="w-5 h-5" />
