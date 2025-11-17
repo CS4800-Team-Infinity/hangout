@@ -65,7 +65,7 @@ export default function NearbyEventsSection() {
 
   return (
     <section className="max-w-7xl mx-auto ">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 text-black">
         <h2 className="text-2xl font-semibold">Events near {city}</h2>
         <Link
           href="/events"

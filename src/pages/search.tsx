@@ -121,6 +121,30 @@ function MapContent({
                 return true;
               }
 
+              // Check if description/details/overview contains the search query
+              const eventAny = event as any;
+              if (
+                eventAny.description &&
+                typeof eventAny.description === "string" &&
+                eventAny.description.toLowerCase().includes(lowerQuery)
+              ) {
+                return true;
+              }
+              if (
+                eventAny.details &&
+                typeof eventAny.details === "string" &&
+                eventAny.details.toLowerCase().includes(lowerQuery)
+              ) {
+                return true;
+              }
+              if (
+                eventAny.overview &&
+                typeof eventAny.overview === "string" &&
+                eventAny.overview.toLowerCase().includes(lowerQuery)
+              ) {
+                return true;
+              }
+
               // Check if location address contains the search query
               const locationMatch =
                 typeof event.location === "string"
@@ -136,12 +160,23 @@ function MapContent({
                 if (event.host.name.toLowerCase().includes(lowerQuery)) {
                   return true;
                 }
+
+                // Check if tags contain the search query
+                if (Array.isArray(eventAny.tags)) {
+                  if (
+                    eventAny.tags.some(
+                      (tag: any) =>
+                        typeof tag === "string" &&
+                        tag.toLowerCase().includes(lowerQuery)
+                    )
+                  ) {
+                    return true;
+                  }
+                }
               }
 
-              // If the search query doesn't match title/location/host,
-              // but we have coordinates from a city search, include all events
-              // This handles the case: user searches "Pomona" → show all Pomona events
-              return true;
+              // If none of the above match, don't include this event
+              return false;
             });
 
             // Update search status
@@ -388,6 +423,28 @@ export default function SearchResults() {
       setMapCenter({ lat: latitude, lng: longitude });
     }
   }, [router.isReady, q, lat, lng, city]);
+
+  // Track search keyword in database
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (!searchQuery || searchQuery.trim().length === 0) return;
+
+    const trackSearch = async () => {
+      try {
+        await fetch("/api/search/track", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ keyword: searchQuery }),
+        });
+      } catch (err) {
+        console.error("Failed to track search keyword:", err);
+      }
+    };
+
+    trackSearch();
+  }, [router.isReady, searchQuery]);
 
   const handleBackToHome = () => {
     router.push("/");

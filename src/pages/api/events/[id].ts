@@ -45,7 +45,7 @@ async function handleGetEvent(
       ? { $or: [{ _id: eventId }, { uuid: eventId }] }
       : { uuid: eventId };
 
-    const event = await Hangout.findOne(query).populate(
+    let event = await Hangout.findOne(query).populate(
       "host",
       "name username email bio"
     );
@@ -53,6 +53,37 @@ async function handleGetEvent(
     if (!event) {
       return res.status(404).json({ success: false, error: "Event not found" });
     }
+
+    // increment counters
+    try {
+      const beforeUpdate = await Hangout.findById(event._id).lean();
+      console.log("🔍 Before update:", beforeUpdate);
+
+      await Hangout.updateOne(
+        { _id: event._id },
+        {
+          $inc: {
+            viewCount: 1,
+            viewsLast24h: 1,
+          },
+        }
+      );
+
+      const afterUpdate = await Hangout.findById(event._id)
+        .select("viewCount viewsLast24h")
+        .lean();
+      console.log("🔍 After update:", afterUpdate);
+    } catch (err) {
+      console.error("❌ Error updating view counts:", err);
+    }
+
+    // reload updated version
+    event = await Hangout.findById(event._id).populate(
+      "host",
+      "name username email bio"
+    );
+
+    console.log("viewsLast24h AFTER UPDATE:", event.viewsLast24h);
 
     if (!event.isPublic) {
       const token = req.headers.authorization?.replace("Bearer ", "");
@@ -203,11 +234,18 @@ async function handleUpdateEvent(
       ? { $or: [{ _id: eventId }, { uuid: eventId }] }
       : { uuid: eventId };
 
-    const event = await Hangout.findOne(query);
+    let event = await Hangout.findOne(query);
 
     if (!event) {
       return res.status(404).json({ success: false, error: "Event not found" });
     }
+
+    await Hangout.findByIdAndUpdate(event._id, {
+      $inc: {
+        viewCount: 1,
+        viewsLast24h: 1,
+      },
+    });
 
     if (event.host.toString() !== userId) {
       return res.status(403).json({
@@ -253,6 +291,8 @@ async function handleUpdateEvent(
 
     const updatedEvent = await event.save();
     await updatedEvent.populate("host", "name username email");
+
+    console.log("viewsLast24h AFTER UPDATE:", updatedEvent.viewsLast24h);
 
     res.status(200).json({
       success: true,

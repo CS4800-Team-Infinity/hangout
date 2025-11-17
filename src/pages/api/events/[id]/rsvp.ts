@@ -109,6 +109,7 @@ async function handleCreateRSVP(
     }
 
     let rsvp = await RSVP.findOne({ hangout: event._id, user: userId });
+    let isNewRSVP = false;
 
     if (rsvp) {
       rsvp.status = status;
@@ -123,7 +124,15 @@ async function handleCreateRSVP(
         respondedAt: new Date(),
         notes,
       });
-      await rsvp.save();
+      isNewRSVP = true;
+    }
+
+    // Track RSVP with timestamp for 24h calculation
+    if (isNewRSVP && status === "accepted") {
+      await Hangout.findByIdAndUpdate(event._id, {
+        $inc: { rsvpsLast24h: 1 },
+        $set: { lastRSVPAt: new Date() }, // Track when last RSVP happened
+      });
     }
 
     await rsvp.populate("user", "name username email");

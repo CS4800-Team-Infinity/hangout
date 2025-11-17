@@ -23,6 +23,10 @@ export interface Hangout extends Document {
     min: [1, "maxParticipants must be at least 1"];
   };
 
+  viewCount: number;
+  viewsLast24h: number;
+  rsvpsLast24h: number;
+
   status: "upcoming" | "ongoing" | "completed" | "cancelled";
   isPublic: boolean;
   createdAt: string | Date;
@@ -112,6 +116,15 @@ const HangoutSchema = new Schema<Hangout>(
       type: Boolean,
       default: true,
     },
+    viewCount: {
+      type: Number,
+      default: 0,
+    },
+    viewsLast24h: {
+      type: Number,
+      default: 0,
+    },
+    rsvpsLast24h: { type: Number, default: 0 },
   },
   {
     timestamps: true,
