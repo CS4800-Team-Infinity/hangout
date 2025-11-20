@@ -30,38 +30,44 @@ export default function ContactPage() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        gap: "80px",
-        padding: "100px 100px",
-        backgroundColor: "#f5f5f7",
-        minHeight: "100vh",
-        color: "black",
-      }}
-    >
+    <div className="contact-container">
       {/* LEFT FORM */}
-      <form style={{ width: "400px" }} onSubmit={handleSubmit}>
+      <form className="contact-section" onSubmit={handleSubmit}>
         <h1
           style={{ fontSize: "32px", marginBottom: "10px", fontWeight: "600" }}
         >
           Get in touch
         </h1>
-
         <p
           style={{
             color: "#555",
             marginBottom: "30px",
             fontSize: "16px",
+            lineHeight: "1.6",
             maxWidth: "420px",
           }}
         >
           Whether you have questions, want to collaborate, advertise, or just
           share feedback, feel free to reach out. We're happy to hear from you.
+          <br />
+          <span style={{ display: "block", marginTop: "10px" }}>
+            You can also email us directly at{" "}
+            <a
+              href="mailto:gethangout.team@gmail.com"
+              style={{
+                color: "#5D5FEF",
+                textDecoration: "none",
+                fontWeight: 600,
+                transition: "color 0.3s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#EF5DA8")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#5D5FEF")}
+            >
+              gethangout.team@gmail.com
+            </a>
+            .
+          </span>
         </p>
-
         <div
           style={{
             width: "100%",
@@ -70,7 +76,6 @@ export default function ContactPage() {
             marginBottom: "40px",
           }}
         ></div>
-
         <input
           type="text"
           placeholder="Your name*"
@@ -88,7 +93,6 @@ export default function ContactPage() {
             outline: "none",
           }}
         />
-
         <input
           type="email"
           placeholder="Email*"
@@ -106,7 +110,6 @@ export default function ContactPage() {
             outline: "none",
           }}
         />
-
         <textarea
           placeholder="Message*"
           value={form.message}
@@ -125,7 +128,6 @@ export default function ContactPage() {
             resize: "none",
           }}
         />
-
         <button
           type="submit"
           style={{
@@ -141,20 +143,11 @@ export default function ContactPage() {
         >
           Submit
         </button>
-
         <p style={{ marginTop: "16px" }}>{status}</p>
       </form>
 
       {/* RIGHT MAP */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          textAlign: "left",
-          width: "600px",
-        }}
-      >
+      <div className="contact-section">
         <h2
           style={{
             fontSize: "16px",
@@ -166,9 +159,13 @@ export default function ContactPage() {
         </h2>
 
         <iframe
-          width="600"
-          height="500"
-          style={{ borderRadius: "12px", border: "none", marginBottom: "16px" }}
+          style={{
+            width: "100%",
+            height: "500px",
+            borderRadius: "12px",
+            border: "none",
+            marginBottom: "16px",
+          }}
           loading="lazy"
           allowFullScreen
           referrerPolicy="no-referrer-when-downgrade"
