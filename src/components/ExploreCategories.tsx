@@ -69,8 +69,8 @@ export default function ExploreCategories() {
             <Link
               key={tag.name}
               href={`/events?tag=${encodeURIComponent(tag.slug)}`}
-              className="w-[280px] flex-shrink-0 flex flex-col items-center justify-center 
-                         rounded-xl p-10 shadow-lg shadow-[#5D5FEF]/100 
+              className="w-[280px] shrink-0 flex flex-col items-center justify-center 
+                         rounded-xl p-10 shadow-lg shadow-[#5D5FEF] 
                          hover:shadow-[#5D5FEF]/70 hover:scale-105 transition
                          bg-purple-900 text-white"
             >

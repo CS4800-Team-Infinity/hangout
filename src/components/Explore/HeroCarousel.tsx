@@ -64,15 +64,7 @@ const HeroCarousel = () => {
             className="w-full h-full bg-cover bg-center relative"
             style={{ backgroundImage: `url(${slide.image})` }}
           >
-            <div
-              className="
-  absolute inset-0 
-  bg-gradient-to-r from-black/70 to-black/30
-  flex 
-  items-end md:items-center
-  pb-8 md:pb-0
-"
-            >
+            <div className="absolute inset-0 bg-linear-to-r from-black/70 to-black/30 flex items-end md:items-center pb-8 md:pb-0">
               <div className="px-8 md:px-16 text-white">
                 <h1 className="text-3xl md:text-5xl font-bold mb-2">
                   {slide.title}

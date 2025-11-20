@@ -14,7 +14,7 @@ export default function Footer() {
               width={45}
               height={45}
             />
-            <h2 className="text-2xl font-semibold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-semibold bg-linear-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
               HangOut
             </h2>
           </div>
@@ -91,7 +91,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/" className="link-gradient">
+                <a href="/contact" className="link-gradient">
                   Contact us
                 </a>
               </li>
@@ -138,7 +138,7 @@ export default function Footer() {
                   className="group"
                   aria-label="Facebook"
                 >
-                  <span className="icon-mask icon-facebook bg-[#2b001a] group-hover:bg-gradient-to-r group-hover:from-[#5D5FEF] group-hover:to-[#EF5DA8] group-hover:scale-110" />
+                  <span className="icon-mask icon-facebook bg-[#2b001a] group-hover:bg-linear-to-r group-hover:from-[#5D5FEF] group-hover:to-[#EF5DA8] group-hover:scale-110" />
                 </a>
                 <a
                   href="https://www.instagram.com"
@@ -147,7 +147,7 @@ export default function Footer() {
                   className="group"
                   aria-label="Instagram"
                 >
-                  <span className="icon-mask icon-instagram bg-[#2b001a] group-hover:bg-gradient-to-r group-hover:from-[#5D5FEF] group-hover:to-[#EF5DA8] group-hover:scale-110" />
+                  <span className="icon-mask icon-instagram bg-[#2b001a] group-hover:bg-linear-to-r group-hover:from-[#5D5FEF] group-hover:to-[#EF5DA8] group-hover:scale-110" />
                 </a>
                 <a
                   href="https://www.tiktok.com"
@@ -156,7 +156,7 @@ export default function Footer() {
                   className="group"
                   aria-label="TikTok"
                 >
-                  <span className="icon-mask icon-tiktok bg-[#2b001a] group-hover:bg-gradient-to-r group-hover:from-[#5D5FEF] group-hover:to-[#EF5DA8] group-hover:scale-110" />
+                  <span className="icon-mask icon-tiktok bg-[#2b001a] group-hover:bg-linear-to-r group-hover:from-[#5D5FEF] group-hover:to-[#EF5DA8] group-hover:scale-110" />
                 </a>
               </div>
             </div>

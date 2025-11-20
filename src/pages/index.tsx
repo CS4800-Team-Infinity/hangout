@@ -80,7 +80,7 @@ export default function HomePage() {
           <MapView />
         </div>
         <div className="md:w-1/2 w-full text-center md:text-left space-y-6 px-6">
-          <h1 className="text-6xl font-extrabold bg-gradient-to-r from-[#EF5DA8] via-[#B07CFA] to-[#5D5FEF] bg-clip-text text-transparent leading-tight">
+          <h1 className="text-6xl font-extrabold bg-linear-to-r from-[#EF5DA8] via-[#B07CFA] to-[#5D5FEF] bg-clip-text text-transparent leading-tight">
             Hangout
           </h1>
           <p className="text-gray-600 text-lg">
@@ -98,7 +98,7 @@ export default function HomePage() {
       {/* ===== Join Hangout Banner ===== */}
       <section className="max-w-7xl mx-auto px-6 md:px-12 py-12 flex justify-center">
         <div
-          className="relative w-full rounded-2xl overflow-hidden shadow-lg flex flex-col items-center justify-center text-center text-white sm:p-8 h-[240px] sm:h-[320px] md:h-[380px] bg-cover bg-center"
+          className="relative w-full rounded-2xl overflow-hidden shadow-lg flex flex-col items-center justify-center text-center text-white sm:p-8 h-60 sm:h-80 md:h-[380px] bg-cover bg-center"
           style={{
             backgroundImage: "url('/hangoutletter.png')",
           }}
