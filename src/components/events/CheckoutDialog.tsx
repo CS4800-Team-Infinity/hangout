@@ -234,6 +234,9 @@ export default function CheckoutDialog({
     return () => clearInterval(interval);
   }, [isOpen]);
 
+  // Ensure price is always a number (fallback to 0 if undefined)
+  const price = Number((event as any)?.price ?? 0);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="!max-w-[1200px] !w-[95vw] max-h-[90vh] p-0 rounded-xl overflow-auto bg-white">
@@ -536,9 +539,7 @@ export default function CheckoutDialog({
                 <span>Total</span>
 
                 <span>
-                  {event.price === 0
-                    ? "Free"
-                    : `$${(event.price * quantity).toFixed(2)}`}
+                  {price === 0 ? "Free" : `$${(price * quantity).toFixed(2)}`}
                 </span>
               </div>
             </div>
