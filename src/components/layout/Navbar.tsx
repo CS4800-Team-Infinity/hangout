@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import NotificationsMenu from "@/components/layout/NotificationsMenu";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
@@ -116,6 +117,7 @@ export function Navbar() {
               <div className="text-sm text-zinc-400">login...</div>
             ) : isAuthenticated && user ? (
               <>
+                <NotificationsMenu />
                 <Link
                   href="/profile"
                   className="hidden sm:block text-md font-semibold text-black transition-colors hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-[#5D5FEF] hover:to-[#EF5DA8]"
