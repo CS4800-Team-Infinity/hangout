@@ -368,7 +368,7 @@ export default function CreateEventPage() {
             </Link>
 
             {/* Event Title Card */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle className="text-sm">Event Title</CardTitle>
               </CardHeader>
@@ -379,7 +379,7 @@ export default function CreateEventPage() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className="text-sm"
+                  className="border-1 border-gray-300 text-sm"
                 />
                 <Input
                   placeholder="Add a short sentence about your event"
@@ -390,9 +390,9 @@ export default function CreateEventPage() {
                       description: e.target.value,
                     }))
                   }
-                  className="text-sm"
+                  className="border-1 border-gray-300 text-sm"
                 />
-                <select className="w-full text-sm border rounded-md px-2 py-1">
+                <select className="w-full text-sm text-gray-400 border-1 border-gray-300 rounded-md px-2 py-1">
                   <option>Draft</option>
                 </select>
               </CardContent>
@@ -557,7 +557,7 @@ export default function CreateEventPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="md:ml-64 flex-1 p-4 md:p-8 pt-24">
+        <div className="md:ml-64 flex-1 p-4 md:p-8 pt-24 mt-16">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Event Image */}
             <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-200">
@@ -572,7 +572,7 @@ export default function CreateEventPage() {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 hover:cursor-pointer"
               >
                 <svg
                   className="w-5 h-5 text-gray-600"
@@ -598,7 +598,7 @@ export default function CreateEventPage() {
             </div>
 
             {/* Event Title Section */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle>Event Title</CardTitle>
               </CardHeader>
@@ -606,6 +606,7 @@ export default function CreateEventPage() {
                 <Input
                   placeholder="Enter event title"
                   value={formData.title}
+                  className="border-1 border-gray-300"
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
@@ -613,6 +614,7 @@ export default function CreateEventPage() {
                 <Input
                   placeholder="Add a short sentence about your event"
                   value={formData.description}
+                  className="border-1 border-gray-300"
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
@@ -624,7 +626,7 @@ export default function CreateEventPage() {
             </Card>
 
             {/* Date and Time / Location Section */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle>Date and time / Location</CardTitle>
               </CardHeader>
@@ -638,6 +640,7 @@ export default function CreateEventPage() {
                       <Input
                         type="date"
                         value={formData.date}
+                        className="border-1 border-gray-300"
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -650,6 +653,7 @@ export default function CreateEventPage() {
                           type="time"
                           placeholder="Start time"
                           value={formData.startTime}
+                          className="border-1 border-gray-300"
                           onChange={(e) =>
                             setFormData((prev) => ({
                               ...prev,
@@ -661,6 +665,7 @@ export default function CreateEventPage() {
                           type="time"
                           placeholder="End time"
                           value={formData.endTime}
+                          className="border-1 border-gray-300"
                           onChange={(e) =>
                             setFormData((prev) => ({
                               ...prev,
@@ -675,7 +680,7 @@ export default function CreateEventPage() {
                     <label className="text-sm font-medium text-gray-700">
                       Location
                     </label>
-                    <div className="mt-2">
+                    <div className="mt-2 border-1 border-gray-300 rounded-md">
                       <LocationInput
                         value={formData.location.address}
                         onChange={(value) =>
@@ -716,7 +721,7 @@ export default function CreateEventPage() {
             </Card>
 
             {/* Overview Section */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle>Overview</CardTitle>
               </CardHeader>
@@ -724,6 +729,7 @@ export default function CreateEventPage() {
                 <Textarea
                   placeholder="Use this section to share extra details about your event, such as key information, venue specifics, accessibility options, or anything else that will help attendees prepare."
                   value={formData.overview}
+                  className="border-1 border-gray-300"
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
@@ -736,13 +742,14 @@ export default function CreateEventPage() {
             </Card>
 
             {/* Host Info Section */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle>Host Info</CardTitle>
               </CardHeader>
               <CardContent>
                 <Textarea
                   placeholder="Tell participants a little about yourself or your group."
+                  className="border-1 border-gray-300"
                   value={formData.hostInfo}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -756,7 +763,7 @@ export default function CreateEventPage() {
             </Card>
 
             {/* Lineup Section */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle>Lineup</CardTitle>
               </CardHeader>
@@ -764,6 +771,7 @@ export default function CreateEventPage() {
                 <Textarea
                   placeholder="Showcase your special guests by adding a dedicated section to your event page. Customize the section title to match your event theme, and include details about each guest. You can also mark someone as a headliner to give them extra spotlight."
                   value={formData.lineup}
+                  className="border-1 border-gray-300"
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, lineup: e.target.value }))
                   }
@@ -773,7 +781,7 @@ export default function CreateEventPage() {
             </Card>
 
             {/* Capacity & Tickets Section */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle>Capacity & Tickets</CardTitle>
               </CardHeader>
@@ -782,6 +790,7 @@ export default function CreateEventPage() {
                   placeholder="In this section, you can set the capacity and ticketing options for your event. Choose whether to limit the number of guests or leave it open, and decide if tickets will be free, paid, or donation-based. You can also require attendees to RSVP to confirm their spot."
                   rows={3}
                   readOnly
+                  className="border-1 border-gray-300"
                 />
                 <div className="space-y-3">
                   <div>
@@ -801,7 +810,7 @@ export default function CreateEventPage() {
                             : undefined,
                         }))
                       }
-                      className="mt-1"
+                      className="mt-1 border-1 border-gray-300 rounded-md"
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -815,7 +824,7 @@ export default function CreateEventPage() {
                           requiresRSVP: e.target.checked,
                         }))
                       }
-                      className="w-4 h-4"
+                      className="w-4 h-4 border-gray-300 rounded"
                     />
                     <label
                       htmlFor="requiresRSVP"
@@ -848,7 +857,7 @@ export default function CreateEventPage() {
                           isPublic: !prev.isPublic,
                         }))
                       }
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#5D5FEF] focus:ring-offset-2 ${
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#5D5FEF] focus:ring-offset-2 ${
                         formData.isPublic ? "bg-[#5D5FEF]" : "bg-gray-300"
                       }`}
                     >
@@ -864,7 +873,7 @@ export default function CreateEventPage() {
             </Card>
 
             {/* Tags / Category Section */}
-            <Card className="border-[#5D5FEF]">
+            <Card className="border-1 border-gray-200 bg-white text-black">
               <CardHeader>
                 <CardTitle>Tags / Category</CardTitle>
               </CardHeader>
@@ -878,7 +887,7 @@ export default function CreateEventPage() {
                     <button
                       key={category}
                       onClick={() => handleTagToggle(category)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors hover:cursor-pointer ${
                         formData.tags.includes(category)
                           ? "bg-[#5D5FEF] text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"

@@ -203,49 +203,65 @@ export default function EditEventPage() {
   if (isLoading || loadingEvent) return null;
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-6 mt-16 text-black">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold">Edit Event</h1>
-            <p className="text-sm text-gray-600">Update event details and publish changes</p>
+            <p className="text-sm text-gray-500">Update event details and publish changes</p>
           </div>
-          <Link href={`/events/${id}`} className="text-sm text-[#5D5FEF] hover:underline">Cancel</Link>
         </div>
 
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>Event Image</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
-              <Image
-                src={formData.imageUrl || "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop"}
+        <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-200 mb-4">
+            <Image
+                src={
+                    formData.imageUrl ||
+                    "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop"
+                }
                 alt="Event"
                 fill
                 className="object-cover"
-              />
-              <button onClick={() => fileInputRef.current?.click()} className="absolute top-2 right-2 p-2 bg-white rounded-full shadow">
-                Edit
-              </button>
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-            </div>
-          </CardContent>
-        </Card>
+            />
+            <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 hover:cursor-pointer"
+            >
+            <svg
+                className="w-5 h-5 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+            />
+            </svg>
+            </button>
+            <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+            />
+        </div>
 
-        <Card className="mb-4">
+        <Card className="mb-4 border-1 border-gray-200 bg-white text-black">
           <CardHeader>
             <CardTitle>Basic Info</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <Input placeholder="Title" value={formData.title} onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))} />
-              <Input placeholder="Short description" value={formData.description} onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))} />
+              <Input placeholder="Title" value={formData.title} className="border-1 border-gray-300" onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))} />
+              <Input placeholder="Short description" value={formData.description} className="border-1 border-gray-300" onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="mb-4">
+        <Card className="mb-4 border-1 border-gray-200 bg-white text-black">
           <CardHeader>
             <CardTitle>Date & Location</CardTitle>
           </CardHeader>
@@ -253,31 +269,33 @@ export default function EditEventPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm">Date</label>
-                <Input type="date" value={formData.date} onChange={(e) => setFormData((p) => ({ ...p, date: e.target.value }))} />
+                <Input type="date" value={formData.date} className="border-1 border-gray-300" onChange={(e) => setFormData((p) => ({ ...p, date: e.target.value }))} />
                 <label className="text-sm mt-2">Start time</label>
-                <Input type="time" value={formData.startTime} onChange={(e) => setFormData((p) => ({ ...p, startTime: e.target.value }))} />
+                <Input type="time" value={formData.startTime} className="border-1 border-gray-300" onChange={(e) => setFormData((p) => ({ ...p, startTime: e.target.value }))} />
               </div>
               <div>
                 <label className="text-sm">Location</label>
-                <LocationInput
-                  value={formData.location.address}
-                  onChange={(value) => setFormData((p) => ({ ...p, location: { ...p.location, address: value } }))}
-                  onSelect={handleLocationSelect}
-                />
+                <div className="border-1 border-gray-300 rounded-md">
+                    <LocationInput
+                        value={formData.location.address}
+                        onChange={(value) => setFormData((p) => ({ ...p, location: { ...p.location, address: value } }))}
+                        onSelect={handleLocationSelect}
+                    />
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="mb-4">
+        <Card className="mb-4 border-1 border-gray-200 bg-white text-black">
           <CardHeader>
             <CardTitle>Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="Overview" value={formData.overview} onChange={(e) => setFormData((p) => ({ ...p, overview: e.target.value }))} rows={4} />
+            <Textarea placeholder="Overview" value={formData.overview} className="border-1 border-gray-300" onChange={(e) => setFormData((p) => ({ ...p, overview: e.target.value }))} rows={4} />
             <div className="mt-3">
               <label className="text-sm">Max participants</label>
-              <Input type="number" min={1} value={formData.maxParticipants || ""} onChange={(e) => setFormData((p) => ({ ...p, maxParticipants: e.target.value ? parseInt(e.target.value) : undefined }))} />
+              <Input type="number" min={1} value={formData.maxParticipants || ""} className="border-1 border-gray-300" onChange={(e) => setFormData((p) => ({ ...p, maxParticipants: e.target.value ? parseInt(e.target.value) : undefined }))} />
             </div>
             <div className="mt-3 flex items-center gap-3">
               <input id="isPublic" type="checkbox" checked={formData.isPublic} onChange={(e) => setFormData((p) => ({ ...p, isPublic: e.target.checked }))} />
@@ -287,8 +305,8 @@ export default function EditEventPage() {
         </Card>
 
         <div className="flex justify-end gap-3">
-          <Link href={`/events/${id}`} className="px-4 py-2 border rounded">Cancel</Link>
-          <Button onClick={handleSave} disabled={isSaving} className="bg-[#5D5FEF] text-white">
+          <Link href={`/events/${id}`} className="ml-2 inline-flex items-center px-3 py-2 rounded-md border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition">Cancel</Link>
+          <Button onClick={handleSave} disabled={isSaving} className="bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white hover:from-[#EF5DA8] hover:to-[#5D5FEF] hover:cursor-pointer">
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
