@@ -12,10 +12,12 @@ import RelatedEvents from "@/components/RelatedEvents";
 import type { EventDetails } from "@/types/EventDetails";
 
 interface User {
+  id?: string;
   firstName?: string;
   lastName?: string;
   name?: string;
   email?: string;
+  role?: string;
 }
 
 export default function EventDetailsPage() {
@@ -36,14 +38,13 @@ export default function EventDetailsPage() {
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [fullName, setFullName] = useState("");
 
-  // Fetch user data
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("/api/user/profile", {
+        const response = await fetch("/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -53,8 +54,10 @@ export default function EventDetailsPage() {
         if (!apiUser) return;
 
         setUser({
+          id: apiUser.id,
           name: apiUser.name || "",
           email: apiUser.email || "",
+          role: apiUser.role || undefined,
         });
 
         console.log("Fetched user:", apiUser);
@@ -354,6 +357,15 @@ export default function EventDetailsPage() {
                   />
                 )}
               </div>
+              {/* edit button */}
+              {user && event && ((user.id && user.id === (event.host as any)._id?.toString()) || user.role === 'admin') && (
+                <Link
+                  href={`/events/${event._id}/edit`}
+                  className="ml-2 inline-flex items-center px-3 py-2 rounded-md border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
+                >
+                  Edit
+                </Link>
+              )}
             </div>
           </div>
         </div>
