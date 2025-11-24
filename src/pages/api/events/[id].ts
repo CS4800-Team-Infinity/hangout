@@ -1,6 +1,7 @@
 import connectDB from "@/lib/connect";
 import Hangout from "@/models/Hangout";
 import RSVP from "@/models/RSVP";
+import User from "@/models/User";
 import jwt from "jsonwebtoken";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -129,7 +130,6 @@ async function handleGetEvent(
       .populate("user", "name username email")
       .lean();
 
-    // Tags
     const eventTags = Array.isArray(event.tags) ? event.tags : [];
 
     // related events query
@@ -149,14 +149,12 @@ async function handleGetEvent(
             status: "upcoming",
           };
 
-    // Fetch related events
     const relatedEventsRaw = await Hangout.find(relatedQuery)
       .populate("host", "name username email")
       .sort({ date: 1 })
       .limit(4)
       .lean();
 
-    // Fetch RSVPs for ALL related events
     const relatedRSVPs = await RSVP.find({
       hangout: { $in: relatedEventsRaw.map((e) => e._id) },
       status: "accepted",
@@ -164,7 +162,6 @@ async function handleGetEvent(
       .populate("user", "name username profilePicture")
       .lean();
 
-    // Group RSVPs by eventId
     const rsvpByEvent: Record<string, any[]> = {};
     for (const r of relatedRSVPs) {
       const key = r.hangout.toString();
@@ -172,7 +169,6 @@ async function handleGetEvent(
       rsvpByEvent[key].push(r.user);
     }
 
-    // Build final relatedEvents
     const relatedEvents = relatedEventsRaw.map((e) => {
       const attendees = (rsvpByEvent[(e._id as any).toString()] || []).map(
         (u: any) => ({
@@ -226,10 +222,8 @@ async function handleUpdateEvent(
     };
     const userId = decoded.userId;
 
-    // Check if eventId is a valid MongoDB ObjectId (24 hex characters)
     const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(eventId);
 
-    // Build query based on ID format
     const query = isValidObjectId
       ? { $or: [{ _id: eventId }, { uuid: eventId }] }
       : { uuid: eventId };
@@ -247,10 +241,12 @@ async function handleUpdateEvent(
       },
     });
 
-    if (event.host.toString() !== userId) {
+    // allow event host or admin users to update
+    const requestingUser = await User.findById(userId).select("role");
+    if (event.host.toString() !== userId && requestingUser?.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        error: "Only the event host can update this event",
+        error: "Only the event host or an admin can update this event",
       });
     }
 
@@ -336,10 +332,8 @@ async function handleDeleteEvent(
     };
     const userId = decoded.userId;
 
-    // Check if eventId is a valid MongoDB ObjectId (24 hex characters)
     const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(eventId);
 
-    // Build query based on ID format
     const query = isValidObjectId
       ? { $or: [{ _id: eventId }, { uuid: eventId }] }
       : { uuid: eventId };
@@ -350,10 +344,12 @@ async function handleDeleteEvent(
       return res.status(404).json({ success: false, error: "Event not found" });
     }
 
-    if (event.host.toString() !== userId) {
+    // allow event host or admins to delete
+    const requestingUser = await User.findById(userId).select("role");
+    if (event.host.toString() !== userId && requestingUser?.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        error: "Only the event host can delete this event",
+        error: "Only the event host or an admin can delete this event",
       });
     }
 
