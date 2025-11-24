@@ -282,7 +282,9 @@ async function handleCheckRSVP(req: NextApiRequest, res: NextApiResponse) {
       userId: string;
     };
 
-    const { eventId } = req.query; // or req.body, depends on your usage
+    // Accept either the route param `id` (from /api/events/:id/rsvp)
+    // or a query param `eventId` (older usage).
+    const eventId = (req.query.id || req.query.eventId) as string | undefined;
     const userId = decoded.userId;
 
     const event = await Hangout.findOne({
