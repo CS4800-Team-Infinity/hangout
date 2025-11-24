@@ -22,7 +22,7 @@ interface PasswordFormData {
 }
 
 const Profile = () => {
-  const { user, isAuthenticated, refreshUser, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, refreshUser, logout } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,12 +44,16 @@ const Profile = () => {
 
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [adminStats, setAdminStats] = useState<{ totalUsers: number; totalEvents: number } | null>(null);
+  const [loadingAdminStats, setLoadingAdminStats] = useState(false);
+  const [adminError, setAdminError] = useState('');
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // only redirect to login after auth check completes
+    if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
     if (user) {
@@ -59,6 +63,31 @@ const Profile = () => {
         email: user.email || '',
         bio: user.bio || ''
       });
+    }
+    // load admin stats when user is admin
+    if (user?.role === 'admin') {
+      const loadAdminStats = async () => {
+        setLoadingAdminStats(true);
+        setAdminError('');
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch('/api/admin/stats', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (data.success) {
+            setAdminStats({ totalUsers: data.totalUsers, totalEvents: data.totalEvents });
+          } else {
+            setAdminError(data.error || 'Failed to load admin stats');
+          }
+        } catch (err) {
+          setAdminError('Failed to load admin stats');
+        } finally {
+          setLoadingAdminStats(false);
+        }
+      };
+
+      loadAdminStats();
     }
   }, [user]);
 
@@ -213,7 +242,7 @@ const Profile = () => {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-black flex items-center justify-center">
         <div>Loading...</div>
       </div>
     );
@@ -224,7 +253,34 @@ const Profile = () => {
       <div className="max-w-4xl mx-auto px-8">
         <h1 className="text-3xl text-black font-bold mb-8">Profile Settings</h1>
 
-        <div className="flex space-x-1 mb-8 bg-white p-1 rounded-lg">
+          {user.role === 'admin' && (
+            <div className="bg-white rounded-lg p-4 mb-6 text-black">
+              <h2 className="text-lg font-semibold mb-3">Admin View</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                <div className="p-3 bg-zinc-100 rounded-md h-full flex flex-col justify-center">
+                  <div className="text-xs text-zinc-500">Total users</div>
+                  <div className="text-2xl font-semibold">
+                    {loadingAdminStats ? '...' : adminStats?.totalUsers ?? 'N/A'}
+                  </div>
+                </div>
+
+                <div className="p-3 bg-zinc-100 rounded-md h-full flex flex-col justify-center">
+                  <div className="text-xs text-zinc-500">Total events</div>
+                  <div className="text-2xl font-semibold">
+                    {loadingAdminStats ? '...' : adminStats?.totalEvents ?? 'N/A'}
+                  </div>
+                </div>
+
+                <div className="p-3 bg-zinc-100 rounded-md flex flex-col h-full">
+                  <div className="text-xs text-zinc-500 mb-2">User management</div>
+                  <a href="/users" className="inline-block mt-auto px-3 py-2 bg-black text-white rounded-lg text-sm text-center">View all users</a>
+                </div>
+              </div>
+              {adminError && <div className="text-sm text-red-500 mt-3">{adminError}</div>}
+            </div>
+          )}
+
+          <div className="flex space-x-1 mb-8 bg-white p-1 rounded-lg">
           {[
             { key: 'profile', label: 'Profile Information' },
             { key: 'password', label: 'Change Password' },
@@ -347,9 +403,12 @@ const Profile = () => {
 
               <div className="flex justify-between items-center pt-4">
                 <div className="text-sm text-zinc-400">
-                  <p>Member since: {formatDate(user.createdAt)}</p>
-                  <p>Last active: {formatDate(user.lastActive)}</p>
-                </div>
+                    {user.role === 'admin' && (
+                      <p>Role: Admin</p>
+                    )}
+                    <p>Member since: {formatDate(user.createdAt)}</p>
+                    <p>Last active: {formatDate(user.lastActive)}</p>
+                  </div>
                 
                 <Button 
                   type="submit" 
