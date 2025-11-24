@@ -114,7 +114,7 @@ export default function LocationInput({
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-full"
+          className="w-full pr-10"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
           📍
