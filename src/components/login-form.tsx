@@ -120,6 +120,7 @@ export function LoginForm({
                 placeholder="m@example.com"
                 value={formData.email}
                 onChange={handleInputChange}
+                className="border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                 required
                 disabled={isLoading}
               />
@@ -133,13 +134,14 @@ export function LoginForm({
                 placeholder="password"
                 value={formData.password}
                 onChange={handleInputChange}
+                className="border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                 required
                 disabled={isLoading}
               />
             </div>
             <Button
               type="submit"
-              className="w-full bg-white hover:cursor-pointer transition-all duration-200"
+              className="w-full bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent hover:cursor-pointer transition-all duration-200"
               disabled={isLoading}
             >
               {isLoading ? "logging in..." : "login"}
