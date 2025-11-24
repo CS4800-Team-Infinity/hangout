@@ -87,7 +87,7 @@ export default function UsersPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-black flex items-center justify-center">
         <div>please log in to view users.</div>
       </div>
     );
