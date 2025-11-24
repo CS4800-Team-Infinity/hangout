@@ -1,0 +1,34 @@
+# This workflow runs every hour and triggers our event reminder API.
+
+name: Send Event Reminders (Cron)
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Every hour
+  workflow_dispatch: # Allow manual run from GitHub
+
+jobs:
+  trigger-reminders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call /api/cron/send-reminders
+        run: |
+          echo "Triggering reminders..."
+          RESPONSE=$(curl -s -o /tmp/res.txt -w "%{http_code}" -X POST \
+            "${{ secrets.PROD_URL }}/api/cron/send-reminders" \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+
+          echo "Status: $RESPONSE"
+          echo "--- Response Body ---"
+          cat /tmp/res.txt
+          echo "---------------------"
+
+          if [ "$RESPONSE" -ne 200 ]; then
+            echo "❌ Cron failed"
+            exit 1
+          fi
+
+      - name: Done
+        run: echo "Cron job finished successfully."
