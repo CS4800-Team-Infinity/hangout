@@ -98,6 +98,7 @@ export function SignupForm({
                 placeholder="john doe"
                 value={formData.name}
                 onChange={handleInputChange}
+                className="border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                 required
                 disabled={isLoading}
               />
@@ -111,6 +112,7 @@ export function SignupForm({
                 placeholder="m@example.com"
                 value={formData.email}
                 onChange={handleInputChange}
+                className="border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                 required
                 disabled={isLoading}
               />
@@ -124,6 +126,7 @@ export function SignupForm({
                 placeholder="johndoe"
                 value={formData.username}
                 onChange={handleInputChange}
+                className="border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                 required
                 disabled={isLoading}
               />
@@ -136,6 +139,7 @@ export function SignupForm({
                 type="password"
                 placeholder="password"
                 value={formData.password}
+                className="border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                 onChange={handleInputChange}
                 required
                 disabled={isLoading}
@@ -143,8 +147,8 @@ export function SignupForm({
             </div>
             <Button
               type="submit"
-              className="w-full bg-white hover:cursor-pointer transition-all duration-200"
-              style={{ boxShadow: "0 0 16px rgba(226, 205, 205, 0.8)" }}
+              className="w-full bg-black text-white hover:cursor-pointer transition-all hover:bg-black hover:scale-105 duration-200"
+              style={{ boxShadow: "0 0 16px rgba(8, 8, 8, 0.8)" }}
               disabled={isLoading}
             >
               {isLoading ? "creating account..." : "signup"}
