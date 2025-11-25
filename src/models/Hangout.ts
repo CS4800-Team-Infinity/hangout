@@ -28,6 +28,10 @@ export interface Hangout extends Document {
   rsvpsLast24h: number;
 
   status: "upcoming" | "ongoing" | "completed" | "cancelled";
+
+  sentReminder1Day: boolean;
+  sentReminder1Hour: boolean;
+
   isPublic: boolean;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -111,6 +115,14 @@ const HangoutSchema = new Schema<Hangout>(
       type: String,
       enum: ["upcoming", "ongoing", "completed", "cancelled"],
       default: "upcoming",
+    },
+    sentReminder1Day: {
+      type: Boolean,
+      default: false,
+    },
+    sentReminder1Hour: {
+      type: Boolean,
+      default: false,
     },
     isPublic: {
       type: Boolean,
