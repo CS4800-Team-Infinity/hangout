@@ -49,7 +49,6 @@ const CATEGORIES = [
   "Food & Drink",
   "Hobbies & Passion",
   "Travel & Outdoor",
-  "Social Activities",
 ];
 
 export default function CreateEventPage() {
@@ -786,15 +785,15 @@ export default function CreateEventPage() {
                 <CardTitle>Capacity & Tickets</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Textarea
+                {/* <Textarea
                   placeholder="In this section, you can set the capacity and ticketing options for your event. Choose whether to limit the number of guests or leave it open, and decide if tickets will be free, paid, or donation-based. You can also require attendees to RSVP to confirm their spot."
                   rows={3}
                   readOnly
                   className="border-1 border-gray-300"
-                />
+                /> */}
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm text-gray-700">
                       Maximum Participants
                     </label>
                     <Input
