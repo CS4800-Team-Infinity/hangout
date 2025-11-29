@@ -69,7 +69,6 @@ export default function EventsPage() {
   const [view, setView] = useState<"list" | "map">("list");
   const [events, setEvents] = useState<MapEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [timeFilter, setTimeFilter] = useState<"upcoming" | "past">("upcoming");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -100,7 +99,6 @@ export default function EventsPage() {
         if (category) params.append("category", category);
         if (tag) params.append("tag", tag);
         params.append("status", "upcoming");
-        params.append("timeFilter", timeFilter);
         params.append("page", isInitialLoad ? "1" : page.toString());
         params.append("limit", "12");
 
@@ -171,7 +169,7 @@ export default function EventsPage() {
     };
 
     fetchEvents(true);
-  }, [city, category, tag, timeFilter, userLocation]);
+  }, [city, category, tag, userLocation]);
 
   // Load more events when page changes (for infinite scroll)
   useEffect(() => {
@@ -186,7 +184,6 @@ export default function EventsPage() {
         if (category) params.append("category", category);
         if (tag) params.append("tag", tag);
         params.append("status", "upcoming");
-        params.append("timeFilter", timeFilter);
         params.append("page", page.toString());
         params.append("limit", "12");
 
@@ -349,44 +346,6 @@ export default function EventsPage() {
 
           {/* view switch */}
           <div className="flex items-center gap-2">
-            {/* Time filter toggle */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => {
-                  setTimeFilter("upcoming");
-                  setPage(1);
-                  setHasMore(true);
-                }}
-                className={`
-                  px-4 py-2 rounded-lg text-sm font-medium transition-all
-                  ${
-                    timeFilter === "upcoming"
-                      ? "bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white shadow-md"
-                      : "text-gray-700 hover:text-gray-900"
-                  }
-                `}
-              >
-                Upcoming
-              </button>
-              <button
-                onClick={() => {
-                  setTimeFilter("past");
-                  setPage(1);
-                  setHasMore(true);
-                }}
-                className={`
-                  px-4 py-2 rounded-lg text-sm font-medium transition-all
-                  ${
-                    timeFilter === "past"
-                      ? "bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white shadow-md"
-                      : "text-gray-700 hover:text-gray-900"
-                  }
-                `}
-              >
-                Past
-              </button>
-            </div>
-
             {/* List view button*/}
             <button
               onClick={() => setView("list")}
