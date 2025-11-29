@@ -1,5 +1,5 @@
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { hangoutsAPI, HangoutEvent } from "@/lib/api";
 import EventCardHome from "@/components/EventCard/EventCardHome";
 import EventCardMap from "@/components/EventCard/EventCardMap";
@@ -69,6 +69,10 @@ export default function EventsPage() {
   const [view, setView] = useState<"list" | "map">("list");
   const [events, setEvents] = useState<MapEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState<"upcoming" | "past">("upcoming");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
   const [userLocation, setUserLocation] = useState<{
@@ -81,15 +85,30 @@ export default function EventsPage() {
   const [mapZoom, setMapZoom] = useState(11);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchEvents = async (isInitialLoad = true) => {
       try {
-        setLoading(true);
+        if (isInitialLoad) {
+          setLoading(true);
+          setEvents([]); // Clear events on filter change
+          setPage(1); // Reset to page 1
+        } else {
+          setLoadingMore(true);
+        }
 
         const params = new URLSearchParams();
         if (city) params.append("city", city);
         if (category) params.append("category", category);
         if (tag) params.append("tag", tag);
         params.append("status", "upcoming");
+        params.append("timeFilter", timeFilter);
+        params.append("page", isInitialLoad ? "1" : page.toString());
+        params.append("limit", "12");
+
+        // Add user location if available
+        if (userLocation) {
+          params.append("lat", userLocation.lat.toString());
+          params.append("lng", userLocation.lng.toString());
+        }
 
         const res = await fetch(`/api/hangouts/list?${params.toString()}`);
         const data = await res.json();
@@ -126,17 +145,105 @@ export default function EventsPage() {
           };
         });
 
-        setEvents(normalized);
+        if (isInitialLoad) {
+          setEvents(normalized);
+        } else {
+          // Append to existing events for infinite scroll
+          setEvents((prev) => [...prev, ...normalized]);
+        }
+
+        // Update hasMore based on pagination metadata
+        if (data.pagination) {
+          setHasMore(data.pagination.hasNextPage);
+        } else {
+          setHasMore(false);
+        }
       } catch (err) {
         console.error(err);
-        setEvents([]);
+        if (isInitialLoad) {
+          setEvents([]);
+        }
+        setHasMore(false);
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
 
-    fetchEvents();
-  }, [city, category, tag]);
+    fetchEvents(true);
+  }, [city, category, tag, timeFilter, userLocation]);
+
+  // Load more events when page changes (for infinite scroll)
+  useEffect(() => {
+    if (page === 1) return; // Skip initial load
+
+    const loadMore = async () => {
+      try {
+        setLoadingMore(true);
+
+        const params = new URLSearchParams();
+        if (city) params.append("city", city);
+        if (category) params.append("category", category);
+        if (tag) params.append("tag", tag);
+        params.append("status", "upcoming");
+        params.append("timeFilter", timeFilter);
+        params.append("page", page.toString());
+        params.append("limit", "12");
+
+        // Add user location if available
+        if (userLocation) {
+          params.append("lat", userLocation.lat.toString());
+          params.append("lng", userLocation.lng.toString());
+        }
+
+        const res = await fetch(`/api/hangouts/list?${params.toString()}`);
+        const data = await res.json();
+
+        const rawEvents = Array.isArray(data.events) ? data.events : [];
+
+        const normalized: MapEvent[] = rawEvents.map((e: any): MapEvent => {
+          const rawDate = e.date ?? e.datetime ?? new Date().toISOString();
+          const date = new Date(rawDate);
+
+          const rawCoordinates =
+            Array.isArray(e.location?.coordinates) &&
+            e.location.coordinates.length === 2
+              ? e.location.coordinates
+              : e.coordinates && e.coordinates.lat && e.coordinates.lng
+              ? [e.coordinates.lng, e.coordinates.lat]
+              : null;
+
+          const coordinates = rawCoordinates
+            ? { lat: rawCoordinates[1], lng: rawCoordinates[0] }
+            : null;
+
+          return {
+            ...e,
+            coordinates,
+            month: date.toLocaleString("default", { month: "short" }),
+            day: date.getDate().toString(),
+            date: rawDate,
+            datetime: rawDate,
+          };
+        });
+
+        setEvents((prev) => [...prev, ...normalized]);
+
+        if (data.pagination) {
+          setHasMore(data.pagination.hasNextPage);
+        } else {
+          setHasMore(false);
+        }
+      } catch (err) {
+        console.error(err);
+        setHasMore(false);
+      } finally {
+        setLoadingMore(false);
+      }
+    };
+
+    loadMore();
+  }, [page]);
 
   // Display title dynamically based on URL parameters
   const title = city
@@ -200,6 +307,30 @@ export default function EventsPage() {
     );
   }, []);
 
+  // Infinite scroll with IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          console.log("📜 Loading more events...");
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.unobserve(sentinel);
+    };
+  }, [hasMore, loadingMore, events]);
+
   return (
     <div className="max-w-7xl mx-auto px-6 md:px-12 py-12 pt-40 lg:pt-25 text-black mb-20">
       {/* Header */}
@@ -218,6 +349,44 @@ export default function EventsPage() {
 
           {/* view switch */}
           <div className="flex items-center gap-2">
+            {/* Time filter toggle */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => {
+                  setTimeFilter("upcoming");
+                  setPage(1);
+                  setHasMore(true);
+                }}
+                className={`
+                  px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  ${
+                    timeFilter === "upcoming"
+                      ? "bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white shadow-md"
+                      : "text-gray-700 hover:text-gray-900"
+                  }
+                `}
+              >
+                Upcoming
+              </button>
+              <button
+                onClick={() => {
+                  setTimeFilter("past");
+                  setPage(1);
+                  setHasMore(true);
+                }}
+                className={`
+                  px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  ${
+                    timeFilter === "past"
+                      ? "bg-gradient-to-r from-[#5D5FEF] to-[#EF5DA8] text-white shadow-md"
+                      : "text-gray-700 hover:text-gray-900"
+                  }
+                `}
+              >
+                Past
+              </button>
+            </div>
+
             {/* List view button*/}
             <button
               onClick={() => setView("list")}
@@ -312,6 +481,45 @@ export default function EventsPage() {
                 />
               );
             })}
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-10 col-span-full" />
+
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <div className="col-span-full flex justify-center py-8">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span className="text-sm">Loading more events...</span>
+                </div>
+              </div>
+            )}
+
+            {/* No more events message */}
+            {!hasMore && events.length > 0 && (
+              <div className="col-span-full flex justify-center py-8">
+                <p className="text-gray-500 text-sm">No more events to load</p>
+              </div>
+            )}
           </div>
         ) : (
           // Map view

@@ -28,22 +28,36 @@ export default async function handler(
       category,
       tag,
       q, // Search query for event title
+      timeFilter = "upcoming", // "upcoming" or "past"
+      page = "1",
+      limit = "12",
     } = req.query;
 
     // Safely parse floats only if values exist
     const userLat = lat ? parseFloat(lat as string) : NaN;
     const userLng = lng ? parseFloat(lng as string) : NaN;
 
+    // Parse pagination parameters
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+
     console.log("📍 Searching near:", userLat, userLng);
     console.log("🔍 Search query:", q);
+    console.log("⏱️ Time filter:", timeFilter);
+    console.log("📄 Pagination:", { page: pageNum, limit: limitNum });
     console.log("Type check:", typeof userLat, typeof userLng);
 
     let hangouts: HydratedDocument<any>[] = [];
 
     const baseFilter: any = { status };
 
-    // Filter out past events - only show events from today onwards
-    baseFilter.date = { $gte: new Date() };
+    // Filter by timeFilter: upcoming (today onwards) or past (before today)
+    if (timeFilter === "past") {
+      baseFilter.date = { $lt: new Date() };
+    } else {
+      // Default to upcoming events - show events from today onwards
+      baseFilter.date = { $gte: new Date() };
+    }
 
     // Default to showing only public events unless explicitly requesting all
     if (isPublic !== undefined) {
@@ -89,8 +103,8 @@ export default async function handler(
           },
         })
           .populate("host", "name profilePicture")
-          .sort({ date: 1 })
-          .limit(0) // no limit for now
+          .sort({ date: timeFilter === "past" ? -1 : 1 }) // Descending for past, ascending for upcoming
+          .limit(0) // Fetch all results, paginate in-memory
           .lean();
 
         console.log(
@@ -136,8 +150,8 @@ export default async function handler(
           },
         })
           .populate("host", "name profilePicture")
-          .sort({ date: 1 })
-          .limit(0) // no limit for now
+          .sort({ date: timeFilter === "past" ? -1 : 1 }) // Descending for past, ascending for upcoming
+          .limit(0) // Fetch all results, paginate in-memory
           .lean();
 
         console.log(
@@ -173,7 +187,7 @@ export default async function handler(
       .populate("user", "name profilePicture")
       .lean();
 
-    const events = hangouts.map((h) => {
+    const allEvents = hangouts.map((h) => {
       const date = new Date(h.date);
       const attendees = rsvps
         .filter((r) => r.hangout.toString() === h._id.toString())
@@ -207,7 +221,25 @@ export default async function handler(
       };
     });
 
-    return res.status(200).json({ success: true, events });
+    // In-memory pagination
+    const totalCount = allEvents.length;
+    const totalPages = Math.ceil(totalCount / limitNum);
+    const skip = (pageNum - 1) * limitNum;
+    const paginatedEvents = allEvents.slice(skip, skip + limitNum);
+
+    console.log(`📄 Returning page ${pageNum} of ${totalPages} (${paginatedEvents.length} events)`);
+
+    return res.status(200).json({
+      success: true,
+      events: paginatedEvents,
+      pagination: {
+        currentPage: pageNum,
+        totalPages,
+        totalCount,
+        hasNextPage: pageNum < totalPages,
+        hasPrevPage: pageNum > 1,
+      },
+    });
   } catch (err: any) {
     console.error("❌ Error fetching hangouts:", err);
     return res.status(500).json({
