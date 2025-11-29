@@ -32,6 +32,9 @@ export function Navbar() {
     params.append("q", q.trim());
 
     router.push(`/search?${params.toString()}`);
+
+    // Clear the search input after navigation
+    setQ("");
   };
 
   return (
