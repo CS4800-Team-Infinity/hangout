@@ -8,6 +8,7 @@ export interface Hangout extends Document {
   description: string;
   overview?: string;
   lineup?: string;
+  hostInfo?: string;
   host: mongoose.Types.ObjectId;
   date: string | Date;
   price: number;
@@ -61,6 +62,10 @@ const HangoutSchema = new Schema<Hangout>(
       default: "",
     },
     lineup: {
+      type: String,
+      default: "",
+    },
+    hostInfo: {
       type: String,
       default: "",
     },

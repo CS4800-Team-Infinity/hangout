@@ -243,7 +243,7 @@ async function handleUpdateEvent(
 
     // allow event host or admin users to update
     const requestingUser = await User.findById(userId).select("role");
-    if (event.host.toString() !== userId && requestingUser?.role !== 'admin') {
+    if (event.host.toString() !== userId && requestingUser?.role !== "admin") {
       return res.status(403).json({
         success: false,
         error: "Only the event host or an admin can update this event",
@@ -253,11 +253,16 @@ async function handleUpdateEvent(
     const {
       title,
       description,
+      overview,
+      lineup,
+      hostInfo,
+      tags,
       date,
       location,
       maxParticipants,
       isPublic,
       imageUrl,
+      price,
       status,
     } = req.body;
 
@@ -284,6 +289,11 @@ async function handleUpdateEvent(
     if (isPublic !== undefined) event.isPublic = isPublic;
     if (imageUrl !== undefined) event.imageUrl = imageUrl;
     if (status) event.status = status;
+    if (price !== undefined) event.price = price;
+    if (overview !== undefined) event.overview = overview.trim();
+    if (lineup !== undefined) event.lineup = lineup.trim();
+    if (hostInfo !== undefined) event.hostInfo = hostInfo.trim();
+    if (tags !== undefined) event.tags = Array.isArray(tags) ? tags : [];
 
     const updatedEvent = await event.save();
     await updatedEvent.populate("host", "name username email");
@@ -346,7 +356,7 @@ async function handleDeleteEvent(
 
     // allow event host or admins to delete
     const requestingUser = await User.findById(userId).select("role");
-    if (event.host.toString() !== userId && requestingUser?.role !== 'admin') {
+    if (event.host.toString() !== userId && requestingUser?.role !== "admin") {
       return res.status(403).json({
         success: false,
         error: "Only the event host or an admin can delete this event",

@@ -358,14 +358,17 @@ export default function EventDetailsPage() {
                 )}
               </div>
               {/* edit button */}
-              {user && event && ((user.id && user.id === (event.host as any)._id?.toString()) || user.role === 'admin') && (
-                <Link
-                  href={`/events/${event._id}/edit`}
-                  className="ml-2 inline-flex items-center px-3 py-2 rounded-md border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
-                >
-                  Edit
-                </Link>
-              )}
+              {user &&
+                event &&
+                ((user.id && user.id === (event.host as any)._id?.toString()) ||
+                  user.role === "admin") && (
+                  <Link
+                    href={`/events/${event._id}/edit`}
+                    className="ml-2 inline-flex items-center px-3 py-2 rounded-md border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    Edit
+                  </Link>
+                )}
             </div>
           </div>
         </div>
@@ -518,6 +521,16 @@ export default function EventDetailsPage() {
           <div className="space-y-3 py-4">
             <h2 className="text-lg font-semibold text-gray-900">Lineup</h2>
             <p className="text-gray-700 whitespace-pre-line">{event.lineup}</p>
+          </div>
+        )}
+
+        {/* Host Info (custom event field) */}
+        {event.hostInfo && (
+          <div className="space-y-3 py-4">
+            <h2 className="text-lg font-semibold text-gray-900">Host Info</h2>
+            <p className="text-gray-700 whitespace-pre-line">
+              {event.hostInfo}
+            </p>
           </div>
         )}
 

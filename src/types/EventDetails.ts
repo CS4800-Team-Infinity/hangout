@@ -6,6 +6,7 @@ export interface EventDetails {
   description: string;
   overview?: string;
   lineup?: string;
+  hostInfo?: string;
   date: string;
 
   price?: string | number;

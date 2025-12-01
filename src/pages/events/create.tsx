@@ -214,13 +214,16 @@ export default function CreateEventPage() {
           address: formData.location.address,
           coordinates: formData.location.coordinates,
         },
+        overview: formData.overview,
+        hostInfo: formData.hostInfo,
+        lineup: formData.lineup,
+        tags: formData.tags,
         maxParticipants: formData.maxParticipants,
         isPublic: formData.isPublic,
+        requiresRSVP: formData.requiresRSVP,
         imageUrl:
           formData.imageUrl ||
           "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop",
-
-        tags: formData.tags,
       };
 
       const response = await fetch("/api/events", {
