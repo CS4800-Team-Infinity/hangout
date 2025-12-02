@@ -133,21 +133,15 @@ async function handleGetEvent(
     const eventTags = Array.isArray(event.tags) ? event.tags : [];
 
     // related events query
-    const relatedQuery =
-      eventTags.length > 0
-        ? {
-            _id: { $ne: event._id },
-            host: event.host._id,
-            tags: { $in: eventTags },
-            isPublic: true,
-            status: "upcoming",
-          }
-        : {
-            _id: { $ne: event._id },
-            host: event.host._id,
-            isPublic: true,
-            status: "upcoming",
-          };
+    const relatedQuery = {
+      _id: { $ne: event._id },
+      isPublic: true,
+      status: "upcoming",
+      $or: [
+        { host: event.host._id },
+        ...(eventTags.length > 0 ? [{ tags: { $in: eventTags } }] : []),
+      ],
+    };
 
     const relatedEventsRaw = await Hangout.find(relatedQuery)
       .populate("host", "name username email")
@@ -169,21 +163,25 @@ async function handleGetEvent(
       rsvpByEvent[key].push(r.user);
     }
 
-    const relatedEvents = relatedEventsRaw.map((e) => {
-      const attendees = (rsvpByEvent[(e._id as any).toString()] || []).map(
-        (u: any) => ({
-          id: u._id?.toString(),
-          name: u.name,
-          avatarUrl:
-            u.profilePicture ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              u.name
-            )}&background=random`,
-        })
-      );
+    const relatedEvents = relatedEventsRaw.map((e: any) => {
+      const attendees = (rsvpByEvent[e._id.toString()] || []).map((u: any) => ({
+        id: u._id?.toString(),
+        name: u.name,
+        avatarUrl:
+          u.profilePicture ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            u.name
+          )}&background=random`,
+      }));
 
       return {
-        ...e,
+        id: e._id.toString(),
+        title: e.title,
+        datetime: e.date,
+        location: e.location?.address || "",
+        host: e.host?.name || "",
+        imageUrl: e.imageUrl,
+        price: e.price,
         attendees,
       };
     });

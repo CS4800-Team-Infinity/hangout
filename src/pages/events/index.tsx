@@ -84,6 +84,12 @@ export default function EventsPage() {
   const [mapZoom, setMapZoom] = useState(11);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlHasTag = window.location.search.includes("tag=");
+      if (urlHasTag && !tag) {
+        return; // wait for hydration to finish
+      }
+    }
     const fetchEvents = async (isInitialLoad = true) => {
       try {
         if (isInitialLoad) {
@@ -103,7 +109,7 @@ export default function EventsPage() {
         params.append("limit", "12");
 
         // Add user location if available
-        if (userLocation) {
+        if (userLocation && !tag) {
           params.append("lat", userLocation.lat.toString());
           params.append("lng", userLocation.lng.toString());
         }
@@ -188,7 +194,7 @@ export default function EventsPage() {
         params.append("limit", "12");
 
         // Add user location if available
-        if (userLocation) {
+        if (userLocation && !tag) {
           params.append("lat", userLocation.lat.toString());
           params.append("lng", userLocation.lng.toString());
         }

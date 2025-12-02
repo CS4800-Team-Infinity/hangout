@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
-import { hangoutsAPI, HangoutEvent } from "@/lib/api";
+import { HangoutEvent } from "@/lib/api";
 import {
   APIProvider,
   Map,
@@ -49,141 +49,86 @@ function MapContent({
         });
       },
       () => {
-        // user denied, hide marker
         setUserLocation(null);
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
 
-  // Fetch all events for the search location
+  // Fetch events using the backend search API
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await hangoutsAPI.getList({
-          status: "upcoming",
-          isPublic: true,
-          lat: mapCenter.lat,
-          lng: mapCenter.lng,
-        });
 
-        if (response.success && Array.isArray(response.events)) {
-          // Normalize coordinates for all events
-          const eventsWithCoords = response.events
-            .map((event) => {
-              if (
+        // Build query parameters
+        const params = new URLSearchParams();
+        params.append("status", "upcoming");
+        params.append("isPublic", "true");
+
+        // Add search query if provided
+        if (searchQuery.trim()) {
+          params.append("q", searchQuery.trim());
+        } else {
+          // Only use location filtering when NOT searching by text
+          params.append("lat", mapCenter.lat.toString());
+          params.append("lng", mapCenter.lng.toString());
+        }
+
+        const response = await fetch(`/api/hangouts/list?${params.toString()}`);
+        const data = await response.json();
+
+        if (data.success && Array.isArray(data.events)) {
+          // Normalize events with coordinates
+          const eventsWithCoords = data.events
+            .map((event: any) => {
+              // Handle coordinates from different formats
+              let coordinates = null;
+
+              if (event.coordinates?.lat && event.coordinates?.lng) {
+                coordinates = event.coordinates;
+              } else if (
                 typeof event.location === "object" &&
                 event.location &&
-                "type" in event.location &&
-                (event.location as any).type === "Point" &&
-                Array.isArray((event.location as any).coordinates)
+                Array.isArray(event.location.coordinates) &&
+                event.location.coordinates.length === 2
               ) {
-                const [lng, lat] = (event.location as any).coordinates;
-
-                // Parse date for month/day display
-                const eventDate = new Date(event.datetime || event.date || "");
-                const month = eventDate
-                  .toLocaleString("en-US", { month: "short" })
-                  .toUpperCase();
-                const day = eventDate.getDate().toString();
-
-                return { ...event, coordinates: { lat, lng }, month, day };
+                const [lng, lat] = event.location.coordinates;
+                coordinates = { lat, lng };
               }
-              return event.coordinates?.lat && event.coordinates?.lng
-                ? event
-                : null;
+
+              if (!coordinates) return null;
+
+              // Parse date
+              const eventDate = new Date(event.datetime || event.date || "");
+              const month = eventDate
+                .toLocaleString("en-US", { month: "short" })
+                .toUpperCase();
+              const day = eventDate.getDate().toString();
+
+              return {
+                ...event,
+                coordinates,
+                month,
+                day,
+                datetime: event.datetime || event.date,
+              };
             })
             .filter(Boolean) as HangoutEvent[];
 
-          // Filter by search query if provided
-          let filteredEvents = eventsWithCoords;
-          let foundEvent: HangoutEvent | null = null;
+          setAllEvents(eventsWithCoords);
 
+          // Update search status
           if (searchQuery.trim()) {
-            const lowerQuery = searchQuery.toLowerCase();
-
-            // First, try to find an exact or close match for event title
-            foundEvent =
-              eventsWithCoords.find(
-                (event) => event.title.toLowerCase() === lowerQuery
-              ) ||
-              eventsWithCoords.find((event) =>
-                event.title.toLowerCase().includes(lowerQuery)
-              ) ||
-              null;
-
-            // Filter events that match the search term in title, location, or host
-            // This is more lenient - shows all events in the area PLUS any that match the query text
-            filteredEvents = eventsWithCoords.filter((event) => {
-              // Check if title contains the search query
-              if (event.title.toLowerCase().includes(lowerQuery)) {
-                return true;
-              }
-
-              // Check if description/details/overview contains the search query
-              const eventAny = event as any;
-              if (
-                eventAny.description &&
-                typeof eventAny.description === "string" &&
-                eventAny.description.toLowerCase().includes(lowerQuery)
-              ) {
-                return true;
-              }
-              if (
-                eventAny.details &&
-                typeof eventAny.details === "string" &&
-                eventAny.details.toLowerCase().includes(lowerQuery)
-              ) {
-                return true;
-              }
-              if (
-                eventAny.overview &&
-                typeof eventAny.overview === "string" &&
-                eventAny.overview.toLowerCase().includes(lowerQuery)
-              ) {
-                return true;
-              }
-
-              // Check if location address contains the search query
-              const locationMatch =
-                typeof event.location === "string"
-                  ? event.location.toLowerCase().includes(lowerQuery)
-                  : event.location?.address?.toLowerCase().includes(lowerQuery);
-
-              if (locationMatch) {
-                return true;
-              }
-
-              // Check if host name contains the search query
-              if (typeof event.host === "object" && event.host?.name) {
-                if (event.host.name.toLowerCase().includes(lowerQuery)) {
-                  return true;
-                }
-
-                // Check if tags contain the search query
-                if (Array.isArray(eventAny.tags)) {
-                  if (
-                    eventAny.tags.some(
-                      (tag: any) =>
-                        typeof tag === "string" &&
-                        tag.toLowerCase().includes(lowerQuery)
-                    )
-                  ) {
-                    return true;
-                  }
-                }
-              }
-
-              // If none of the above match, don't include this event
-              return false;
-            });
-
-            // Update search status
-            if (foundEvent) {
-              onSearchStatus({ found: true, type: "event" });
-            } else if (filteredEvents.length > 0) {
-              onSearchStatus({ found: true, type: "city" });
+            if (eventsWithCoords.length > 0) {
+              // Check if finding an exact match
+              const exactMatch = eventsWithCoords.find(
+                (e) => e.title.toLowerCase() === searchQuery.toLowerCase()
+              );
+              onSearchStatus({
+                found: true,
+                type: exactMatch ? "event" : "city",
+              });
             } else {
               onSearchStatus({ found: false, type: "none" });
             }
@@ -191,37 +136,44 @@ function MapContent({
             onSearchStatus({ found: true, type: "city" });
           }
 
-          setAllEvents(filteredEvents);
-
           // Focus map based on search results
-          if (map && filteredEvents.length > 0) {
-            if (foundEvent && foundEvent.coordinates) {
-              // If we found a specific event, zoom directly to it
-              map.setCenter(foundEvent.coordinates);
-              map.setZoom(16);
+          if (map && eventsWithCoords.length > 0) {
+            const exactMatch = eventsWithCoords.find(
+              (e) => e.title.toLowerCase() === searchQuery.toLowerCase()
+            );
 
-              // Auto-select the event to show info window
-              setSelectedEvent(foundEvent);
+            if (exactMatch && exactMatch.coordinates) {
+              // Zoom to specific event
+              map.setCenter(exactMatch.coordinates);
+              map.setZoom(16);
+              setSelectedEvent(exactMatch);
             } else {
-              // Otherwise, fit bounds to show all matching events
+              // Fit bounds to all events
               const bounds = new google.maps.LatLngBounds();
-              filteredEvents.forEach(
+              eventsWithCoords.forEach(
                 (e) => e.coordinates && bounds.extend(e.coordinates)
               );
               if (userLocation) {
                 bounds.extend(userLocation);
               }
-
               map.fitBounds(bounds, 64);
             }
           } else if (map && !searchQuery.trim()) {
-            // No search query, just center on the location
             map.setCenter(mapCenter);
             map.setZoom(12);
+          }
+        } else {
+          setAllEvents([]);
+          if (searchQuery.trim()) {
+            onSearchStatus({ found: false, type: "none" });
           }
         }
       } catch (error) {
         console.error("Error fetching events:", error);
+        setAllEvents([]);
+        if (searchQuery.trim()) {
+          onSearchStatus({ found: false, type: "none" });
+        }
       } finally {
         setLoading(false);
       }
@@ -258,7 +210,6 @@ function MapContent({
       map.addListener("dragend", updateVisibleEvents),
     ];
 
-    // Initial update
     updateVisibleEvents();
 
     return () => {
@@ -270,7 +221,6 @@ function MapContent({
     setSelectedEvent(event);
   };
 
-  // Close InfoWindow when clicking on the map
   useEffect(() => {
     if (!map) return;
     const listener = map.addListener("click", () => {
@@ -349,7 +299,7 @@ function MapContent({
 type SearchHeaderProps = {
   searchQuery: string;
   searchLocation: string;
-  searchStatus: { found: boolean };
+  searchStatus: { found: boolean; type: "city" | "event" | "none" };
   visibleEvents: any[];
 };
 
@@ -364,7 +314,7 @@ function SearchHeader({
       <h1 className="text-2xl font-bold text-gray-900 mb-2">
         {searchQuery
           ? `Search Results for "${searchQuery}"`
-          : `Search Results for "${searchLocation}"`}
+          : `Events near ${searchLocation}`}
       </h1>
 
       {!searchStatus.found && searchQuery && (
@@ -373,8 +323,16 @@ function SearchHeader({
             ⚠️ No results found for "{searchQuery}"
           </p>
           <p className="text-yellow-700 text-xs mt-1">
-            Try searching for a different event name or city, or browse events
+            Try searching for a different event name, location, or browse events
             near {searchLocation}.
+          </p>
+        </div>
+      )}
+
+      {searchStatus.found && searchQuery && searchStatus.type === "event" && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+          <p className="text-green-800 text-sm font-medium">
+            ✓ Found matching events
           </p>
         </div>
       )}
@@ -416,7 +374,7 @@ export default function SearchResults() {
       const query = (q as string) || "";
       const latitude = lat ? parseFloat(lat as string) : 34.0585684;
       const longitude = lng ? parseFloat(lng as string) : -117.8226053;
-      const location = city as string;
+      const location = (city as string) || "this area";
 
       setSearchQuery(query);
       setSearchLocation(location);
@@ -543,73 +501,81 @@ export default function SearchResults() {
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* LIST MODE - two column layout */}
         {viewMode === "list" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Map on top for mobile, left for desktop */}
-            <div
-              className="bg-white rounded-2xl shadow-md overflow-hidden 
+          <div className="pb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Map */}
+              <div
+                className="bg-white rounded-2xl shadow-md overflow-hidden
                     h-[260px] lg:h-[calc(100vh-200px)]"
-            >
-              <APIProvider apiKey={apiKey}>
-                <Map
-                  defaultCenter={mapCenter}
-                  defaultZoom={12}
-                  gestureHandling="greedy"
-                  disableDefaultUI={false}
-                  mapId="hangout-search-map"
-                  style={{ width: "100%", height: "100%" }}
-                >
-                  <MapContent
+              >
+                <APIProvider apiKey={apiKey}>
+                  <Map
+                    defaultCenter={mapCenter}
+                    defaultZoom={12}
+                    gestureHandling="greedy"
+                    disableDefaultUI={false}
+                    mapId="hangout-search-map"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      marginBottom: "60px",
+                    }}
+                  >
+                    <MapContent
+                      searchQuery={searchQuery}
+                      mapCenter={mapCenter}
+                      onVisibleEventsChange={handleVisibleEventsChange}
+                      onSearchStatus={handleSearchStatus}
+                    />
+                  </Map>
+                </APIProvider>
+              </div>
+
+              {/* List */}
+              <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 h-full lg:h-[calc(100vh-200px)] flex flex-col">
+                  <SearchHeader
                     searchQuery={searchQuery}
-                    mapCenter={mapCenter}
-                    onVisibleEventsChange={handleVisibleEventsChange}
-                    onSearchStatus={handleSearchStatus}
+                    searchLocation={searchLocation}
+                    searchStatus={searchStatus}
+                    visibleEvents={visibleEvents}
                   />
-                </Map>
-              </APIProvider>
-            </div>
 
-            {/* List below on mobile, right on desktop */}
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-              <div className="p-6 h-full lg:h-[calc(100vh-200px)] flex flex-col">
-                <SearchHeader
-                  searchQuery={searchQuery}
-                  searchLocation={searchLocation}
-                  searchStatus={searchStatus}
-                  visibleEvents={visibleEvents}
-                />
-
-                <div className="flex-1 overflow-y-auto">
-                  {visibleEvents.length === 0 ? (
-                    <div className="flex items-center justify-center h-32">
-                      <div className="text-gray-500">
-                        No events visible in this area
+                  <div className="flex-1 overflow-y-auto">
+                    {visibleEvents.length === 0 ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="text-gray-500">
+                          No events visible in this area
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {visibleEvents.map((event, index) => (
-                        <EventCardList
-                          key={event.uuid || event._id || `event-list-${index}`}
-                          month={event.month}
-                          day={event.day}
-                          title={event.title}
-                          location={
-                            typeof event.location === "string"
-                              ? event.location
-                              : event.location?.address ?? "Unknown location"
-                          }
-                          datetime={event.datetime}
-                          host={event.host}
-                          status={event.status}
-                          price={event.price}
-                          imageUrl={event.imageUrl}
-                          attendees={event.attendees}
-                          eventId={event._id || event.uuid}
-                          registrationUrl={event.registrationUrl}
-                        />
-                      ))}
-                    </div>
-                  )}
+                    ) : (
+                      <div className="space-y-4">
+                        {visibleEvents.map((event, index) => (
+                          <EventCardList
+                            key={
+                              event.uuid || event._id || `event-list-${index}`
+                            }
+                            month={event.month}
+                            day={event.day}
+                            title={event.title}
+                            location={
+                              typeof event.location === "string"
+                                ? event.location
+                                : event.location?.address ?? "Unknown location"
+                            }
+                            datetime={event.datetime}
+                            host={event.host}
+                            status={event.status}
+                            price={event.price}
+                            imageUrl={event.imageUrl}
+                            attendees={event.attendees}
+                            eventId={event._id || event.uuid}
+                            registrationUrl={event.registrationUrl}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -619,7 +585,6 @@ export default function SearchResults() {
         {/* MAP MODE - full width map */}
         {viewMode === "map" && (
           <>
-            {/* Header */}
             <div className="p-2">
               <SearchHeader
                 searchQuery={searchQuery}
@@ -629,25 +594,26 @@ export default function SearchResults() {
               />
             </div>
 
-            {/* Map content */}
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden h-[calc(100vh-200px)]">
-              <APIProvider apiKey={apiKey}>
-                <Map
-                  defaultCenter={mapCenter}
-                  defaultZoom={12}
-                  gestureHandling="greedy"
-                  disableDefaultUI={false}
-                  mapId="hangout-search-map"
-                  style={{ width: "100%", height: "100%" }}
-                >
-                  <MapContent
-                    searchQuery={searchQuery}
-                    mapCenter={mapCenter}
-                    onVisibleEventsChange={handleVisibleEventsChange}
-                    onSearchStatus={handleSearchStatus}
-                  />
-                </Map>
-              </APIProvider>
+            <div className="pb-12">
+              <div className="bg-white rounded-2xl shadow-md overflow-hidden h-[calc(100vh-200px)]">
+                <APIProvider apiKey={apiKey}>
+                  <Map
+                    defaultCenter={mapCenter}
+                    defaultZoom={12}
+                    gestureHandling="greedy"
+                    disableDefaultUI={false}
+                    mapId="hangout-search-map"
+                    style={{ width: "100%", height: "100%" }}
+                  >
+                    <MapContent
+                      searchQuery={searchQuery}
+                      mapCenter={mapCenter}
+                      onVisibleEventsChange={handleVisibleEventsChange}
+                      onSearchStatus={handleSearchStatus}
+                    />
+                  </Map>
+                </APIProvider>
+              </div>
             </div>
           </>
         )}

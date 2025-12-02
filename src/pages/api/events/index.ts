@@ -183,6 +183,7 @@ async function handleGetEvents(req: NextApiRequest, res: NextApiResponse) {
       status = "upcoming",
       isPublic,
       userId,
+      tag,
     } = req.query;
 
     const pageNum = parseInt(page as string);
@@ -201,8 +202,14 @@ async function handleGetEvents(req: NextApiRequest, res: NextApiResponse) {
 
     if (userId) {
       query.host = userId;
-    } else {
+    }
+
+    if (!userId && !tag) {
       query.isPublic = true;
+    }
+
+    if (tag) {
+      query.tags = { $in: [tag] };
     }
 
     const [events, totalCount] = await Promise.all([
@@ -217,9 +224,27 @@ async function handleGetEvents(req: NextApiRequest, res: NextApiResponse) {
 
     const totalPages = Math.ceil(totalCount / limitNum);
 
+    const formattedEvents = events.map((e: any) => ({
+      _id: e._id.toString(),
+      title: e.title,
+      description: e.description || "",
+      overview: e.overview || "",
+      hostInfo: e.hostInfo || "",
+      tags: e.tags || [],
+      datetime: e.date,
+      host: e.host?.name || "Anonymous",
+      location: e.location?.address || "Unknown",
+      coordinates: e.location?.coordinates
+        ? { lat: e.location.coordinates[1], lng: e.location.coordinates[0] }
+        : null,
+      imageUrl: e.imageUrl,
+      status: e.status,
+      price: e.price || 0,
+    }));
+
     res.status(200).json({
       success: true,
-      events,
+      events: formattedEvents,
       pagination: {
         currentPage: pageNum,
         totalPages,
