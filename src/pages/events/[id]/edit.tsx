@@ -46,6 +46,8 @@ export default function EditEventPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [loadingEvent, setLoadingEvent] = useState(true);
+  const [eventHostId, setEventHostId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [formData, setFormData] = useState<EventFormData>({
     title: "",
@@ -107,6 +109,13 @@ export default function EditEventPage() {
             imageUrl: e.imageUrl || "",
             tags: Array.isArray(e.tags) ? e.tags : [],
           });
+          // capture host id for permission checks
+          try {
+            const hostId = e.host?._id || e.host?.id || e.host;
+            setEventHostId(hostId ? hostId.toString() : null);
+          } catch (err) {
+            setEventHostId(null);
+          }
         } else {
           alert(data?.error || "Failed to load event");
         }
@@ -398,6 +407,50 @@ export default function EditEventPage() {
         </Card>
 
         <div className="flex justify-end gap-3">
+          {user && (user.id === eventHostId || user.role === "admin") && (
+            <button
+              onClick={async () => {
+                const confirmed = window.confirm(
+                  "Are you sure you want to delete this event? This action cannot be undone."
+                );
+                if (!confirmed) return;
+
+                setIsDeleting(true);
+                try {
+                  const token =
+                    typeof window !== "undefined"
+                      ? localStorage.getItem("token")
+                      : null;
+                  if (!token) throw new Error("Not authenticated");
+
+                  const res = await fetch(`/api/events/${id}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    router.push("/events");
+                  } else {
+                    alert(data.error || "Failed to delete event");
+                  }
+                } catch (err) {
+                  console.error(err);
+                  alert("Failed to delete event");
+                } finally {
+                  setIsDeleting(false);
+                }
+              }}
+              disabled={isDeleting}
+              className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition ${
+                isDeleting
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700 text-white"
+              }`}
+            >
+              {isDeleting ? "Deleting..." : "Delete Event"}
+            </button>
+          )}
+
           <Link
             href={`/events/${id}`}
             className="ml-2 inline-flex items-center px-3 py-2 rounded-md border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
