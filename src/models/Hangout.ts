@@ -19,10 +19,8 @@ export interface Hangout extends Document {
     address: string;
   };
   imageUrl?: string;
-  maxParticipants: {
-    type: Number;
-    min: [1, "maxParticipants must be at least 1"];
-  };
+  maxParticipants?: number;
+  requiresRSVP?: boolean;
 
   viewCount: number;
   viewsLast24h: number;
@@ -115,6 +113,11 @@ const HangoutSchema = new Schema<Hangout>(
     maxParticipants: {
       type: Number,
       min: [1, "maxParticipants must be at least 1"],
+      required: false,
+    },
+    requiresRSVP: {
+      type: Boolean,
+      default: false,
     },
     status: {
       type: String,

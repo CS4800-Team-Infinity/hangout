@@ -103,7 +103,26 @@ export default function EventsPage() {
         const params = new URLSearchParams();
         if (city) params.append("city", city);
         if (category) params.append("category", category);
-        if (tag) params.append("tag", tag);
+
+        const tagMap: Record<string, string> = {
+          networking: "Networking",
+          Networking: "Networking",
+          tech: "Tech",
+          Tech: "Tech",
+          social: "Social",
+          Social: "Social",
+          "food-drink": "Food & Drink",
+          "Food & Drink": "Food & Drink",
+          "hobbies-passion": "Hobbies & Passion",
+          "Hobbies & Passion": "Hobbies & Passion",
+          "travel-outdoor": "Travel & Outdoor",
+          "Travel & Outdoor": "Travel & Outdoor",
+        };
+
+        const normalizedTag = tag ? tagMap[tag] : null;
+
+        if (normalizedTag) params.append("tag", normalizedTag);
+
         params.append("status", "upcoming");
         params.append("page", isInitialLoad ? "1" : page.toString());
         params.append("limit", "12");
