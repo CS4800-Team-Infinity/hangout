@@ -180,32 +180,25 @@ export default function EventCardBase({
         className={`relative rounded-xl border bg-transparent shadow-sm overflow-visible ${
           shareOpen || actionOpen ? "z-[9999]" : ""
         } ${className}`}
-        // Only make card clickable for home variant
-        onClick={
-          variant === "home"
-            ? (e) => {
-                const target = e.target as HTMLElement;
-                // Skip clicks from buttons or menus
-                if (
-                  target.closest("button") ||
-                  target.closest(".share-menu") ||
-                  target.closest(".action-menu")
-                ) {
-                  e.stopPropagation();
-                  return;
-                }
-                // Navigate to event details when clicking the card
-                if (normalizedEventId) {
-                  console.log(
-                    "Card clicked, navigating to:",
-                    normalizedEventId
-                  );
-                  router.push(`/events/${normalizedEventId}`);
-                }
-              }
-            : undefined
-        }
-        style={variant === "list" ? { cursor: "default" } : undefined}
+        // Make card clickable for all variants
+        onClick={(e) => {
+          const target = e.target as HTMLElement;
+          // Skip clicks from buttons or menus
+          if (
+            target.closest("button") ||
+            target.closest(".share-menu") ||
+            target.closest(".action-menu")
+          ) {
+            e.stopPropagation();
+            return;
+          }
+          // Navigate to event details when clicking the card
+          if (normalizedEventId) {
+            console.log("Card clicked, navigating to:", normalizedEventId);
+            router.push(`/events/${normalizedEventId}`);
+          }
+        }}
+        style={{ cursor: "pointer" }}
       >
         {variant === "home" ? (
           // HOME STYLE
