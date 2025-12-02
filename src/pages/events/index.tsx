@@ -127,8 +127,8 @@ export default function EventsPage() {
         params.append("page", isInitialLoad ? "1" : page.toString());
         params.append("limit", "12");
 
-        // Add user location if available
-        if (userLocation && !tag) {
+        // Only apply near-me filtering when user is not searching by city or tag
+        if (userLocation && !city && !tag) {
           params.append("lat", userLocation.lat.toString());
           params.append("lng", userLocation.lng.toString());
         }
